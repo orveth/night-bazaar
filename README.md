@@ -1,5 +1,12 @@
 # Night Bazaar
 
+> **Status & build note.** A working demo on the pops/cashu accept-layer stack —
+> pay pops at a gate, win ecash. It is published to read and share; it is not yet
+> a standalone buildable checkout, because the server depends on the **private**
+> `MakePrisms/pops` repo (the `pops-core-verify` middleware + charge-01 codec), so
+> `cargo build` needs access to that repo. The `../plans/*.md` design contracts
+> referenced below live in a separate workspace and are not included here.
+
 One Rust axum app serving the game websocket (server-authoritative
 positions + jump, per-session entitlements, chat relay), the pops-gated
 endpoints (`POST /spawn`, `POST /enter/:court`, and the Phase-1b paid plays
