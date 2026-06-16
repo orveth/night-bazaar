@@ -1,0 +1,8 @@
+# money — bearer ecash lives here; never commit
+.local/
+vault/
+
+# build artifacts
+server/target/
+client/node_modules/
+client/dist/

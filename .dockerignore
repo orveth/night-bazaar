@@ -1,0 +1,26 @@
+# Keep the build context tiny: the Dockerfile only needs
+# server/target/docker-stage (the patched binary + libs) and client/dist.
+
+# Exclude all of cargo target EXCEPT the staged runtime tree.
+server/target/*
+!server/target/docker-stage
+
+# Client: only dist is copied.
+client/node_modules
+client/src
+client/test
+client/scripts
+client/*.ts
+client/tsconfig.json
+
+# Never ship secrets / money / local artifacts.
+.local
+vault
+**/*.env
+**/.git
+
+# Source + docs not needed at runtime.
+protocol
+docs
+plans
+**/*.md

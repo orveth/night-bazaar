@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["bun-types"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true
+  },
+  "include": ["src", "test", "scripts", "build.ts", "../protocol/protocol.ts"],
+  "//exclude": "keeper-debug-pay{,2}.ts are superseded one-off debug probes written against the pre-charge01 codec (they read RequestObject as a creqA); the canonical live harnesses are keeper-paytest.ts + live-money.ts. Excluded so they do not fail the typecheck.",
+  "exclude": ["scripts/keeper-debug-pay.ts", "scripts/keeper-debug-pay2.ts"]
+}

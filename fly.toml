@@ -1,0 +1,69 @@
+# Night Bazaar — Fly.io app config.
+#
+# `app` is a placeholder; `fly launch --no-deploy` (or `fly apps create <name>`)
+# sets the real name. See docs/fly-deploy.md for the full deploy sequence.
+#
+# Money + state live on the VOLUME (BAZAAR_VAULT, BAZAAR_REVENUE_SINK -> /data),
+# never in the image. BAZAAR_BINDING_KEY is a Fly SECRET (not here), so deploys
+# do not invalidate outstanding challenges.
+
+app = "night-bazaar"
+primary_region = "sjc"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  # Internal listen address — Fly's edge terminates TLS and routes :443 here.
+  BAZAAR_BIND = "0.0.0.0:8080"
+
+  # The mint. poptest is MAINNET (real sats); it is public https, so the
+  # built-in /mint reverse-proxy is NOT advertised (clients hit the mint
+  # directly). Set both to the same public URL.
+  BAZAAR_MINT_URL = "https://poptest.agi.cash"
+  BAZAAR_MINT_PUBLIC_URLS = "https://poptest.agi.cash"
+
+  # Vault (prize tokens) + revenue sink (a WALLET — redeemed proofs) MUST be on
+  # the persistent volume. revenue.jsonl is real money; it must survive deploys.
+  BAZAAR_VAULT = "/data/tokens.json"
+  BAZAAR_REVENUE_SINK = "/data/revenue.jsonl"
+  BAZAAR_STATIC = "/opt/nbz/client/dist"
+
+  # Gate prices in pops (1 pop = 1 sat). gudnuf may set cheaper at deploy:
+  #   fly secrets are for SECRETS; prices are plain env — override here or with
+  #   `fly deploy -e BAZAAR_PRICE_SPAWN=2 …` / a [env] edit + redeploy.
+  BAZAAR_PRICE_SPAWN = "10"
+  BAZAAR_PRICE_JADE = "50"
+  BAZAAR_PRICE_CRIMSON = "200"
+  BAZAAR_PRICE_GACHA = "5"
+  BAZAAR_PRICE_BELL = "3"
+
+  # Re-probe the mint's keyset rotation every 5 min (multi-unit accept).
+  BAZAAR_UNIT_REFRESH_SECS = "300"
+
+# Persistent volume for the wallet files. Create it BEFORE first deploy:
+#   fly volumes create bazaar_data --region sjc --size 1
+# Its mount must match `destination` below; the size can grow later.
+[mounts]
+  source = "bazaar_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # A stateful ws world + the background unit-refresh task need the machine to
+  # STAY UP. Do NOT auto-stop to zero, or sessions die and the refresh halts.
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "connections"
+    # ws connections are long-lived; keep the soft/hard limits generous.
+    soft_limit = 200
+    hard_limit = 250
+
+# A single small machine is plenty for the spike; the world is in-memory.
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

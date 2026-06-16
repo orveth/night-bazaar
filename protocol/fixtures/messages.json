@@ -1,0 +1,83 @@
+{
+  "comment": "Shared protocol fixtures. server/src/protocol.rs (cargo test protocol_fixtures) and client/test/protocol.test.ts both round-trip every message here; a shape change on one side fails the other.",
+  "clientMsgs": [
+    { "type": "join", "name": "orveth" },
+    { "type": "move", "x": 0.5, "z": -1.0 },
+    { "type": "move", "x": 0.0, "z": 0.0 },
+    { "type": "jump" },
+    { "type": "chat", "text": "two pops a bowl, best deal on the street" },
+    { "type": "interact", "target": "chest.jade" },
+    { "type": "interact", "target": "booth.riddle" },
+    { "type": "answer", "booth": "booth.riddle", "text": "an echo" }
+  ],
+  "serverMsgs": [
+    {
+      "type": "hello",
+      "session": "a3f0c2d14b8e4f6a",
+      "world": {
+        "street": { "minX": -30.0, "maxX": 30.0, "minZ": -10.0, "maxZ": 10.0 },
+        "courts": [
+          {
+            "id": "jade",
+            "gate": "court.jade",
+            "price": 50,
+            "bounds": { "minX": -22.0, "maxX": -6.0, "minZ": 10.0, "maxZ": 24.0 },
+            "door": { "x1": -16.0, "x2": -12.0 }
+          },
+          {
+            "id": "crimson",
+            "gate": "court.crimson",
+            "price": 200,
+            "bounds": { "minX": 6.0, "maxX": 22.0, "minZ": 10.0, "maxZ": 24.0 },
+            "door": { "x1": 12.0, "x2": 16.0 }
+          }
+        ],
+        "chests": [
+          { "id": "chest.jade", "court": "jade", "x": -14.0, "y": 0.0, "z": 20.0 },
+          { "id": "chest.rooftop", "court": "street", "x": 9.0, "y": 3.4, "z": -7.8 }
+        ],
+        "stalls": [
+          {
+            "id": "stall.noodle",
+            "kind": "noodle",
+            "x": 0.0,
+            "z": 9.0,
+            "rot": 3.14159,
+            "footprint": { "minX": -2.5, "maxX": 2.5, "minZ": 7.8, "maxZ": 10.0 }
+          }
+        ],
+        "booths": [
+          { "id": "booth.riddle", "kind": "riddle", "court": "jade", "x": -9.0, "z": 14.0, "price": 0 },
+          { "id": "booth.gacha", "kind": "gacha", "court": "crimson", "x": 18.0, "z": 14.0, "price": 5 },
+          { "id": "booth.bell", "kind": "bell", "court": "street", "x": 4.5, "z": 8.5, "price": 3 }
+        ],
+        "spawnGhost": { "x": 0.0, "z": -6.0 },
+        "spawnBody": { "x": 0.0, "z": 0.0 },
+        "speed": 6.0,
+        "tickHz": 15
+      },
+      "config": {
+        "mintUrl": "http://127.0.0.1:28338",
+        "unit": "pop_1700000000",
+        "acceptedUnits": ["pop_1700000000", "pop_1699900000"],
+        "prices": { "spawn": 10, "court.jade": 50, "court.crimson": 200 },
+        "mode": "live"
+      }
+    },
+    {
+      "type": "state",
+      "tick": 42,
+      "players": [
+        { "id": "a3f0c2d14b8e4f6a", "name": "orveth", "kind": "body", "x": 1.5, "y": 0.85, "z": -2.25 },
+        { "id": "b41d99e002871c33", "name": "ghost-7", "kind": "ghost", "x": -4.0, "y": 0.0, "z": 0.0 }
+      ],
+      "chests": [{ "id": "chest.jade", "claimed": false }]
+    },
+    { "type": "entitlement", "gate": "court.jade" },
+    { "type": "prize", "chest": "chest.jade", "token": "cashuBexampleprizetoken" },
+    { "type": "chat", "from": "a3f0c2d14b8e4f6a", "name": "orveth", "text": "anyone found the rooftop chest yet?" },
+    { "type": "riddle", "booth": "booth.riddle", "prompt": "I speak without a mouth and hear without ears. What am I?" },
+    { "type": "bellring", "booth": "booth.bell", "from": "a3f0c2d14b8e4f6a", "hit": true },
+    { "type": "error", "code": "chest-claimed", "message": "someone got there first" }
+  ]
+}

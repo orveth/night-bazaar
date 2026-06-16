@@ -1,0 +1,46 @@
+[package]
+name = "night-bazaar-server"
+version = "0.1.0"
+edition = "2021"
+description = "Night Bazaar Phase-0 spike: game websocket + pops-gated spawn/court endpoints + client statics, one axum app."
+license = "MIT"
+
+[dependencies]
+# The pops verifier crate — gate middleware + the charge-01 envelope codec.
+# Pinned to MakePrisms/pops main 28e3314 (PR #19: per-proof unit check replaces multi-keyset guard; 12003→402).
+# Private repo: build with CARGO_NET_GIT_FETCH_WITH_CLI=true (ssh auth).
+pops-core-verify = { git = "ssh://git@github.com/MakePrisms/pops.git", rev = "28e3314" }
+# cashu types used to build the CashuRequirement (same major as the crate's).
+cashu = "0.16"
+
+axum = { version = "0.7", features = ["ws"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "time", "signal"] }
+tower-http = { version = "0.5", features = ["fs"] }
+http = "1"
+futures-util = "0.3"
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# /v1/keysets probe at boot (active pop_<ts> unit is read at runtime, never
+# hardcoded). rustls so the binary stays openssl-free.
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+
+rand = "0.8"
+anyhow = "1"
+thiserror = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[dev-dependencies]
+async-trait = "0.1"
+tower = { version = "0.5", features = ["util"] }
+tempfile = "3"
+
+[[bin]]
+name = "night-bazaar-server"
+path = "src/main.rs"
+
+[[bin]]
+name = "gen-vectors"
+path = "src/bin/gen_vectors.rs"

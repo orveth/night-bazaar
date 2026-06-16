@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Night Bazaar</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #14101e;
+        color: #e8e2f5;
+        font-family: ui-monospace, monospace;
+      }
+      #game {
+        position: fixed;
+        inset: 0;
+        display: block;
+      }
+      #hud {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+      }
+      #hud > * {
+        pointer-events: auto;
+      }
+      .hud-top {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .hud-balance {
+        background: rgba(20, 14, 36, 0.85);
+        border: 1px solid #4d3a78;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 15px;
+      }
+      .hud-mode {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+      .hud-mode.mock {
+        color: #ffb13d;
+        font-weight: bold;
+      }
+      .hud-wallet {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 260px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        background: rgba(20, 14, 36, 0.85);
+        border: 1px solid #4d3a78;
+        padding: 10px;
+        border-radius: 6px;
+      }
+      .hud-wallet textarea {
+        height: 56px;
+        resize: none;
+        background: #0e0a18;
+        color: #e8e2f5;
+        border: 1px solid #3a2c5c;
+        font-size: 11px;
+      }
+      .hud-wallet input {
+        background: #0e0a18;
+        color: #e8e2f5;
+        border: 1px solid #3a2c5c;
+        padding: 4px 6px;
+      }
+      .hud-wallet button,
+      .hud-prize button {
+        background: #4d3a78;
+        color: #fff;
+        border: none;
+        padding: 6px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .hud-status {
+        position: absolute;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(20, 14, 36, 0.85);
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 13px;
+        max-width: 80vw;
+      }
+      .hud-prompt {
+        position: absolute;
+        bottom: 56px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(77, 58, 120, 0.92);
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 15px;
+      }
+      .hud-prize {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 420px;
+        background: rgba(20, 14, 36, 0.97);
+        border: 2px solid #ffd34d;
+        border-radius: 8px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .hud-prize textarea {
+        height: 110px;
+        background: #0e0a18;
+        color: #ffd34d;
+        border: 1px solid #3a2c5c;
+        font-size: 11px;
+      }
+      .prize-title {
+        color: #ffd34d;
+        text-align: center;
+      }
+      .hud-chat {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        width: 290px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .hud-chat-log {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        font-size: 12px;
+        max-height: 130px;
+        overflow: hidden;
+      }
+      .hud-chat-line {
+        background: rgba(12, 8, 20, 0.62);
+        border-radius: 5px;
+        padding: 3px 8px;
+      }
+      .hud-chat-name {
+        color: #ffb152;
+        font-weight: bold;
+      }
+      .hud-chat input,
+      #chat-input {
+        background: rgba(14, 10, 24, 0.8);
+        color: #e8e2f5;
+        border: 1px solid #3a2c5c;
+        border-radius: 5px;
+        padding: 6px 8px;
+        font-family: inherit;
+        font-size: 13px;
+      }
+      #chat-input:disabled {
+        opacity: 0.55;
+      }
+      .hud-fps {
+        position: absolute;
+        bottom: 12px;
+        right: 12px;
+        font-size: 11px;
+        opacity: 0.65;
+        background: rgba(12, 8, 20, 0.6);
+        padding: 3px 8px;
+        border-radius: 5px;
+      }
+      /* ----------------------------- booths (1b) ----------------------------- */
+      .hud-riddle,
+      .hud-gacha,
+      .hud-bell {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        background: rgba(20, 14, 36, 0.97);
+        border-radius: 10px;
+        padding: 18px 22px;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+      }
+      .hud-riddle {
+        width: 440px;
+        border: 2px solid #ffd34d;
+      }
+      .riddle-title {
+        color: #ffd34d;
+        font-size: 16px;
+        letter-spacing: 1px;
+      }
+      .riddle-prompt {
+        font-size: 16px;
+        line-height: 1.45;
+        text-align: center;
+        color: #f3ecd0;
+      }
+      .hud-riddle input,
+      #riddle-input {
+        width: 90%;
+        background: #0e0a18;
+        color: #ffd34d;
+        border: 1px solid #5a4a1a;
+        border-radius: 5px;
+        padding: 8px 10px;
+        font-family: inherit;
+        font-size: 15px;
+        text-align: center;
+      }
+      .riddle-flavor {
+        min-height: 16px;
+        font-size: 13px;
+        color: #ff9a6a;
+        font-style: italic;
+      }
+      .hud-riddle button,
+      .hud-gacha button {
+        background: #4d3a78;
+        color: #fff;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      /* gacha */
+      .hud-gacha {
+        width: 380px;
+        border: 2px solid #ff4ad3;
+      }
+      .gacha-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+      }
+      .gacha-card.shake {
+        animation: gacha-shake 0.5s ease-in-out;
+      }
+      @keyframes gacha-shake {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-6px) rotate(-1deg); }
+        40% { transform: translateX(6px) rotate(1deg); }
+        60% { transform: translateX(-4px); }
+        80% { transform: translateX(4px); }
+      }
+      .gacha-title {
+        font-size: 17px;
+        color: #ff7ae0;
+        letter-spacing: 1px;
+      }
+      .gacha-fortune {
+        font-size: 14px;
+        font-style: italic;
+        color: #e6c8ff;
+        text-align: center;
+      }
+      .gacha-win {
+        color: #7dffa8;
+        font-weight: bold;
+        text-align: center;
+      }
+      .gacha-lose {
+        color: #b9a8d8;
+        text-align: center;
+      }
+      .gacha-sparkle {
+        color: #ffe28a;
+        font-size: 22px;
+        letter-spacing: 6px;
+        animation: gacha-shake 0.7s ease-in-out infinite;
+      }
+      /* bell */
+      .hud-bell {
+        border: 2px solid #6ae8ff;
+      }
+      .bell-title {
+        font-size: 16px;
+        color: #6ae8ff;
+        letter-spacing: 1px;
+      }
+      #bell-canvas {
+        background: rgba(8, 12, 18, 0.9);
+        border-radius: 8px;
+      }
+      .bell-hint {
+        font-size: 14px;
+        color: #bfeaff;
+        text-align: center;
+        max-width: 260px;
+      }
+      /* cheap cinematic vignette over the 3D view */
+      #vignette {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(
+          ellipse at 50% 42%,
+          rgba(0, 0, 0, 0) 55%,
+          rgba(4, 2, 10, 0.55) 100%
+        );
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+    <div id="vignette"></div>
+    <div id="hud"></div>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
