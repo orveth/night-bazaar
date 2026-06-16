@@ -1,4 +1,4 @@
-//! Night Bazaar Phase-0 spike server: ONE axum app serving
+//! Night Bazaar server: one axum app serving
 //!   - the game websocket (`/ws`, server-authoritative positions),
 //!   - the pops-gated endpoints (`POST /spawn`, `POST /enter/:court`),
 //!   - the built client statics (`/`),
@@ -6,7 +6,7 @@
 //!
 //! Run (from `night-bazaar/server`, cargo via the pops devshell):
 //!   CARGO_NET_GIT_FETCH_WITH_CLI=true \
-//!   nix develop /srv/forge/projects/pops -c cargo run --release
+//!   nix develop <path/to/pops> -c cargo run --release
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -45,7 +45,7 @@ async fn main() -> anyhow::Result<()> {
 
     // The VALID SET of pop_<ts> units is READ FROM THE MINT at boot, never
     // hardcoded (units rotate + overlap). The newest is the mint-into unit; the
-    // whole set is accepted (multi-unit accept — see `multiunit`). Mock mode
+    // whole set is accepted (multi-unit accept; see `multiunit`). Mock mode
     // skips the probe entirely.
     let valid_units = match cfg.mode {
         Mode::Live => {
@@ -62,7 +62,7 @@ async fn main() -> anyhow::Result<()> {
             Some(valid)
         }
         Mode::Mock => {
-            warn!("BAZAAR_MODE=mock — GATES ARE FREE. Dev/smoke only.");
+            warn!("BAZAAR_MODE=mock: GATES ARE FREE. Dev/smoke only.");
             None
         }
     };
@@ -113,23 +113,23 @@ async fn main() -> anyhow::Result<()> {
 
     let vault = Vault::new(cfg.vault_path.clone());
     match vault.stock() {
-        Ok(0) => warn!(path = %cfg.vault_path.display(), "vault is EMPTY — chest claims will fail until stocked"),
+        Ok(0) => warn!(path = %cfg.vault_path.display(), "vault is EMPTY; chest claims will fail until stocked"),
         Ok(n) => info!(stock = n, "vault loaded"),
-        Err(e) => warn!("vault unreadable ({e}) — chest claims will fail"),
+        Err(e) => warn!("vault unreadable ({e}); chest claims will fail"),
     }
 
     // The revenue sink is a WALLET. In live mode, refuse to boot if we cannot
-    // open it — taking pops we cannot durably record is lost money. Mock mode
+    // open it; taking pops we cannot durably record is lost money. Mock mode
     // runs no payments, so no sink.
     let sink = match cfg.mode {
         Mode::Live => {
             let sink = RevenueSink::open(cfg.revenue_sink_path.clone()).map_err(|e| {
                 anyhow::anyhow!(
-                    "cannot open revenue sink {:?}: {e} — refusing to take payments without a durable sink",
+                    "cannot open revenue sink {:?}: {e}; refusing to take payments without a durable sink",
                     cfg.revenue_sink_path
                 )
             })?;
-            info!(path = %cfg.revenue_sink_path.display(), "revenue sink open (WALLET — back this file up)");
+            info!(path = %cfg.revenue_sink_path.display(), "revenue sink open (WALLET; back this file up)");
             Some(sink)
         }
         Mode::Mock => None,
@@ -161,7 +161,7 @@ async fn main() -> anyhow::Result<()> {
                     .map_err(|e| anyhow::anyhow!("BAZAAR_BINDING_KEY: {e}"))?,
                 None => {
                     warn!(
-                        "BAZAAR_BINDING_KEY unset — using a per-boot key; \
+                        "BAZAAR_BINDING_KEY unset: using a per-boot key; \
                          outstanding challenges die on restart. Set it as a Fly \
                          secret for deploy-survival (see docs/fly-deploy.md)."
                     );
@@ -245,7 +245,7 @@ async fn main() -> anyhow::Result<()> {
 /// Background re-probe: every `interval`, re-read `/v1/keysets`, recompute the
 /// valid-unit set, and (on success) refresh both the gate dispatch registry
 /// (which units are accepted) and the live `GameConfig` advertisement (newest +
-/// accepted). A failed probe is logged and skipped — the previous set stands,
+/// accepted). A failed probe is logged and skipped; the previous set stands,
 /// so a transient mint blip never blanks the gates.
 fn spawn_unit_refresh(
     gates: Arc<MultiUnitGates<night_bazaar_server::multiunit::LiveCredential>>,

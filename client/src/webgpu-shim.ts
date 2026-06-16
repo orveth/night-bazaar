@@ -1,9 +1,9 @@
 /**
- * WebGPU constant-enum shim — MUST be the first import of the entry module.
+ * WebGPU constant-enum shim (MUST be the first import of the entry module).
  *
  * In INSECURE contexts (plain http on a tailnet IP, exactly how the bazaar
  * is served) the browser defines none of the WebGPU globals, and
- * `three.webgpu.js` reads `GPUShaderStage.VERTEX` etc. at module scope —
+ * `three.webgpu.js` reads `GPUShaderStage.VERTEX` etc. at module scope;
  * without this shim the whole bundle throws on load and the page is black.
  * (On localhost it works by accident: localhost is a secure context, so the
  * enums exist even when no adapter does.)

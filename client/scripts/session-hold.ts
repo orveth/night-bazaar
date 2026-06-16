@@ -1,3 +1,4 @@
+// INTERNAL DEV SCRIPT: not part of the game; holds a ws session for manual gate payment via CLI.
 /**
  * Hold a ws session open so an external payer (pop-pay CLI) can pay gates
  * against it: prints the session id, then logs entitlement/error/prize

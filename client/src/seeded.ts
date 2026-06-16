@@ -1,5 +1,5 @@
 /**
- * Tiny deterministic RNG (pure, DOM-free — unit-tested). Everything
+ * Tiny deterministic RNG (pure, DOM-free, unit-tested). Everything
  * procedural in the bazaar (alien bodies, sign glyphs, stall palettes)
  * derives from string seeds through this, so a session id always grows the
  * same alien on every client.
@@ -15,7 +15,7 @@ export function hashString(s: string): number {
   return h >>> 0;
 }
 
-/** mulberry32 — small fast seeded PRNG, returns a () => [0,1) function. */
+/** mulberry32: small fast seeded PRNG, returns a () => [0,1) function. */
 export function mulberry32(seed: number): () => number {
   let a = seed >>> 0;
   return () => {

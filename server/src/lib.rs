@@ -1,5 +1,4 @@
-//! Night Bazaar Phase-0 spike — library surface (modules shared by the binary
-//! and the integration tests).
+//! Night Bazaar server library: modules shared by the binary and the integration tests.
 
 pub mod booth;
 pub mod config;

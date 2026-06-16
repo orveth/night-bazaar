@@ -1,6 +1,7 @@
 /**
  * DOM HUD: wallet panel (import a cashuB, balance), status line, contextual
- * action prompt, prize modal, chat log + input (Phase 1a), FPS corner.
+ * action prompt, prize modal, chat log + input (Phase 1a), FPS corner,
+ * and a small info affordance (ⓘ button + compact overlay panel).
  * Plain DOM, no framework.
  */
 
@@ -21,6 +22,7 @@ export class Hud {
   private chatLog = el("div", "hud-chat-log");
   private chatInput = document.createElement("input");
   private fpsEl = el("div", "hud-fps");
+  private infoPanel = el("div", "hud-info-panel");
 
   constructor(root: HTMLElement, cb: HudCallbacks) {
     const top = el("div", "hud-top");
@@ -64,6 +66,38 @@ export class Hud {
 
     this.promptEl.style.display = "none";
     this.prizeModal.style.display = "none";
+
+    // Info affordance: a small ⓘ button (bottom-right corner) that toggles
+    // a compact panel describing what Night Bazaar is and how it works.
+    const infoBtn = el("button", "hud-info-btn") as HTMLButtonElement;
+    infoBtn.textContent = "ⓘ";
+    infoBtn.title = "About Night Bazaar";
+    infoBtn.setAttribute("aria-label", "About");
+
+    this.infoPanel.style.display = "none";
+    this.infoPanel.innerHTML = `
+      <div class="info-header">
+        <span>Night Bazaar</span>
+        <button class="info-close" aria-label="Close">✕</button>
+      </div>
+      <div class="info-body">
+        <p>A pop-gated 3D world: pay ecash to spawn a body, roam free as a ghost, and win real ecash at booths and chests.
+          <a href="https://github.com/orveth/night-bazaar" target="_blank" rel="noopener">GitHub</a></p>
+        <p><strong>HTTP 402:</strong> game actions are gated by real micropayments (402 Payment Required) instead of logins or captchas.</p>
+        <p><strong>Cashu / pops:</strong> payments are <a href="https://cashu.space" target="_blank" rel="noopener">Cashu</a> ecash bearer tokens.
+          Pops is the cashu-based accept layer that verifies them server-side.</p>
+      </div>
+    `;
+
+    // Wire the close button inside the panel.
+    const closeBtn = this.infoPanel.querySelector(".info-close") as HTMLButtonElement;
+    const toggle = () => {
+      const open = this.infoPanel.style.display === "none";
+      this.infoPanel.style.display = open ? "block" : "none";
+    };
+    infoBtn.onclick = toggle;
+    closeBtn.onclick = toggle;
+
     root.append(
       top,
       this.walletPanel,
@@ -72,6 +106,8 @@ export class Hud {
       this.prizeModal,
       this.chatPanel,
       this.fpsEl,
+      infoBtn,
+      this.infoPanel,
     );
   }
 
@@ -79,7 +115,7 @@ export class Hud {
     this.chatInput.focus();
   }
 
-  /** Ghosts read but cannot speak — reflect it in the input affordance. */
+  /** Ghosts read but cannot speak; reflect it in the input affordance. */
   setKind(kind: "ghost" | "body"): void {
     this.chatInput.disabled = kind === "ghost";
     this.chatInput.placeholder =
@@ -115,7 +151,7 @@ export class Hud {
     this.statusEl.textContent = text;
   }
 
-  /** Contextual prompt ("[E] pay 50 — Jade Court"); empty hides it. */
+  /** Contextual prompt (e.g. "[E] pay 50 - Jade Court"); empty hides it. */
   prompt(text: string | null): void {
     if (text) {
       this.promptEl.textContent = text;

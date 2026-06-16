@@ -2,7 +2,7 @@
  * Procedural weird-alien bodies. `alienParamsFromSeed` is pure and
  * deterministic (unit-tested): the same session id grows the same alien on
  * every client. The mesh builder kitbashes low-poly primitives from the
- * params — no downloaded models.
+ * params; no downloaded models.
  */
 
 import * as THREE from "three/webgpu";

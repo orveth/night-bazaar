@@ -1,6 +1,6 @@
 //! The prize vault: pre-stocked `cashuB…` token strings, keyed by chest id.
 //!
-//! Tokens at rest are BEARER cash — keep the vault small, restrict file
+//! Tokens at rest are BEARER cash; keep the vault small, restrict file
 //! access, never log token contents. A claim pops the chest's first token and
 //! atomically rewrites the file (tmp + rename), so a crash mid-claim never
 //! duplicates a payout.
@@ -8,7 +8,7 @@
 //! Schema (Phase 1a): a JSON object mapping chest id -> array of tokens:
 //!   { "chest.jade": ["cashuB…"], "chest.rooftop": [] }
 //! The Phase-0 format (a bare JSON array) is still READ, interpreted as
-//! `chest.jade`'s stock — the file is never rewritten just for the schema, so
+//! `chest.jade`'s stock; the file is never rewritten just for the schema, so
 //! a legacy vault's token bytes survive untouched until a claim actually
 //! debits it. Chests absent from the map are simply empty.
 
@@ -73,7 +73,7 @@ impl Vault {
         Ok(self.read_map()?.values().map(Vec::len).sum())
     }
 
-    /// Tokens stocked for one chest (0 when absent — empty chests render as
+    /// Tokens stocked for one chest (0 when absent; empty chests render as
     /// already-looted).
     pub fn stock_for(&self, chest: &str) -> Result<usize, VaultError> {
         Ok(self

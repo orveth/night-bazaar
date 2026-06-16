@@ -1,7 +1,7 @@
 /**
  * Dev-only crowd dressing: `?crowd=N` spawns N client-side wandering aliens
  * (ids `fake:n`) so screenshots and FPS measurements exercise a populated
- * street without N real connections. NEVER part of the protocol — the server
+ * street without N real connections. NEVER part of the protocol: the server
  * knows nothing about these; they are ignored by snapshot reconciliation.
  */
 

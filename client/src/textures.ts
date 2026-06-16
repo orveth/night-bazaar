@@ -1,5 +1,5 @@
 /**
- * Procedural canvas textures — the whole art budget is code (zero downloaded
+ * Procedural canvas textures: the whole art budget is code (zero downloaded
  * assets). Glyph signs are fake hanzi: seeded stroke scribbles in a grid that
  * read as signage from a distance without being any real script.
  */
@@ -67,7 +67,7 @@ export function groundTexture(seed = "bazaar-ground"): THREE.CanvasTexture {
   return asTexture(c, [6, 2]);
 }
 
-/** Striped awning canvas, neutral light/dark — tinted per stall by material color. */
+/** Striped awning canvas, neutral light/dark; tinted per stall by material color. */
 export function awningTexture(colorA: string, colorB: string): THREE.CanvasTexture {
   const [c, g] = canvas(128, 64);
   for (let i = 0; i < 8; i++) {
@@ -80,7 +80,7 @@ export function awningTexture(colorA: string, colorB: string): THREE.CanvasTextu
   return asTexture(c, [2, 1]);
 }
 
-/** One fake glyph: seeded strokes in a square cell — reads as hanzi-ish. */
+/** One fake glyph: seeded strokes in a square cell; reads as hanzi-ish. */
 function drawGlyph(
   g: CanvasRenderingContext2D,
   rng: () => number,
@@ -154,7 +154,7 @@ export function signTexture(spec: SignSpec): THREE.CanvasTexture {
   return asTexture(c);
 }
 
-/** Soft radial dot — particle sprite for steam/sparkles. */
+/** Soft radial dot: particle sprite for steam/sparkles. */
 export function dotTexture(): THREE.CanvasTexture {
   const [c, g] = canvas(64, 64);
   const grad = g.createRadialGradient(32, 32, 2, 32, 32, 30);

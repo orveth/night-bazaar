@@ -11,8 +11,8 @@
  *
  * Failure handling per payment-credential.md §Outcomes:
  *   - 402 payment-expired: re-present the SAME token against the fresh
- *     challenge once; a second one means the token's keyset died — abandon.
- *   - 503: mint unreachable, token NOT consumed — retry same token once after
+ *     challenge once; a second one means the token's keyset died, abandon.
+ *   - 503: mint unreachable, token NOT consumed; retry same token once after
  *     Retry-After.
  *   - other 402/400: terminal for this attempt; surface the problem slug.
  */
@@ -39,7 +39,7 @@ export interface PayGateResult {
   receipt?: string;
   /**
    * The parsed JSON body of the SUCCESS response, when present (Phase 1b: a
-   * paid play's result — `GachaResult` / `BellPlay` ride here, since the paid
+   * paid play's result (`GachaResult` / `BellPlay` ride here, since the paid
    * request IS the play). Additive read of data the success path already has;
    * the payment logic (challenge/retry/swap) is unchanged.
    */
@@ -53,7 +53,7 @@ export interface PayGateOptions {
   mintUrl: string;
   /**
    * The `pop_<ts>` unit the wallet holds. Declared to the server (the `unit`
-   * query param) so it issues the challenge in THIS unit — the multi-unit
+   * query param) so it issues the challenge in THIS unit. The multi-unit
    * accept path: an older-but-still-valid unit is honored instead of being
    * forced onto the newest. Omit to let the server use its newest (mint-into)
    * unit (the fresh-player default).
@@ -123,7 +123,7 @@ export async function payGate(
       ok: false,
       status: 402,
       spent: 0,
-      reason: `challenge accepts mints ${creqa.mints.join(", ")} — wallet holds ${opts.mintUrl}`,
+      reason: `challenge accepts mints ${creqa.mints.join(", ")}; wallet holds ${opts.mintUrl}`,
     };
   }
 

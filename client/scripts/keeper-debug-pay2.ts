@@ -1,3 +1,4 @@
+// INTERNAL DEV SCRIPT: not part of the game; used to debug the full payGate path with request/response logging.
 /**
  * One-off: the REAL payGate composition, with fetchImpl wrapped to log every
  * request/response body (clone), and bank-all-on-exit. No reimplementation.

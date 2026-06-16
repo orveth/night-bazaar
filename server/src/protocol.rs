@@ -1,4 +1,4 @@
-//! Rust mirror of `../../protocol/protocol.ts` — the shared wire protocol.
+//! Rust mirror of `../../protocol/protocol.ts` (the shared wire protocol).
 //!
 //! Both sides round-trip `../../protocol/fixtures/messages.json` in their
 //! tests, so a drift between this file and the TS source fails a suite.
@@ -148,7 +148,7 @@ pub struct GameConfig {
     pub mint_url: String,
     /// The unit a FRESH player should mint into: the newest currently-valid
     /// `pop_<ts>` unit (latest `final_expiry`), read from the mint's
-    /// `/v1/keysets` at boot and refreshed periodically — never hardcoded.
+    /// `/v1/keysets` at boot and refreshed periodically (never hardcoded).
     pub unit: String,
     /// Every currently-valid `pop_<ts>` unit the server will accept a payment
     /// in (units rotate + overlap; an older-but-unexpired unit is still

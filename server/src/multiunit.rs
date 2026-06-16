@@ -8,7 +8,7 @@
 //! 402). One [`ChargeMiddlewareState`] therefore accepts exactly ONE unit. But
 //! `pop_<ts>` units ROTATE and rotations OVERLAP, so at any moment several units
 //! are simultaneously valid (see [`crate::mint`]). gudnuf's requirement: "add
-//! new units, but still accept all old but valid units" — a returning player
+//! new units, but still accept all old but valid units": a returning player
 //! whose token is in yesterday's still-valid unit must not be cut off.
 //!
 //! ## How it works (verifier untouched)
@@ -26,7 +26,7 @@
 //! So the audited challenge issuance / HMAC binding / swap / problem-mapping all
 //! run exactly as before; we only choose WHICH unit's requirement applies. The
 //! verifier still does its scalar `token_unit == requirement.unit` check per
-//! challenge — we are not weakening it.
+//! challenge; we are not weakening it.
 //!
 //! The per-unit set is refreshable at runtime (the binary re-probes
 //! `/v1/keysets` every few minutes). A unit drops the moment its `final_expiry`
@@ -271,7 +271,7 @@ fn build_states(
 /// Read the client-declared unit: the `unit` query param first (works for a
 /// header-less CLI like `pop pay` and for the browser payer, which appends it),
 /// then the [`UNIT_HEADER`] header. A `pop_<ts>` unit is pure ASCII
-/// (`pop_` + decimal digits), so a plain `&`/`=` split is sufficient — no
+/// (`pop_` + decimal digits), so a plain `&`/`=` split is sufficient; no
 /// percent-decoding is needed for the values we accept.
 fn declared_unit(req: &Request) -> Option<String> {
     if let Some(q) = req.uri().query() {
@@ -330,7 +330,7 @@ where
                 "type": "about:blank",
                 "title": "unit-state-missing",
                 "status": 500,
-                "detail": format!("no charge state built for the valid unit {unit:?} — server bug"),
+                "detail": format!("no charge state built for the valid unit {unit:?} (server bug)"),
             })
             .to_string(),
         )
@@ -338,7 +338,7 @@ where
     }
 }
 
-/// The "your token's unit has retired — mint the current one" response. A 409
+/// The "your token's unit has retired, mint the current one" response. A 409
 /// (not a 402): the request is well-formed and we are not issuing a challenge in
 /// a unit the client cannot use; the player must acquire the current unit first.
 fn mint_current_unit(declared: &str, newest: &str, accepted: &[String]) -> Response {

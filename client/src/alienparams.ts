@@ -1,5 +1,5 @@
 /**
- * Procedural alien PARAMETERS — pure and DOM/three-free so bun can unit-test
+ * Procedural alien PARAMETERS: pure and DOM/three-free so bun can unit-test
  * determinism. The same session id grows the same alien on every client.
  * The mesh builder that consumes these lives in alien.ts (three-dependent).
  */
@@ -7,7 +7,7 @@
 import { hashString, mulberry32, rfloat, rint } from "./seeded.ts";
 
 export interface AlienParams {
-  /** Base skin hue [0,1) — saturated odd colors. */
+  /** Base skin hue [0,1): saturated odd colors. */
   hue: number;
   /** Accent hue (belly, antenna tips). */
   accentHue: number;

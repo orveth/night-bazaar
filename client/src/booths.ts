@@ -7,7 +7,7 @@
  *     [E] rings it, the server judges the timing by ITS clock.
  *
  * These render RESULTS the server already decided; the only "logic" here is the
- * pendulum's *visual* sweep (cosmetic — authority is the server clock). No
+ * pendulum's *visual* sweep (cosmetic; authority is the server clock). No
  * payment logic lives here; paid plays go through payer.ts in main.ts.
  */
 
@@ -22,7 +22,7 @@ function el(tag: string, className: string): HTMLElement {
 export interface BoothCallbacks {
   /** Submit a riddle guess (free). */
   onAnswer(booth: string, text: string): void;
-  /** The player rang the bell ([E]) — POST the press. */
+  /** The player rang the bell ([E]); POST the press. */
   onBellPress(): void;
 }
 
@@ -242,7 +242,7 @@ export class BoothUI {
     ctx.lineTo(bobX, bobY);
     ctx.stroke();
 
-    // Bob — glows green near the center crossing (the hit window cue).
+    // Bob: glows green near the center crossing (the hit window cue).
     const nearCenter = Math.abs(Math.sin(angle)) < 0.12;
     ctx.fillStyle = nearCenter ? "#7dffa8" : "#ffb152";
     ctx.beginPath();

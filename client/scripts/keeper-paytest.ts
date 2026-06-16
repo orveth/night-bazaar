@@ -1,8 +1,8 @@
+// INTERNAL DEV SCRIPT: not part of the game; used to smoke-test the full live spawn-gate payment path.
 /**
- * Keeper smoke: pay JUST the spawn gate (10) through the full live path —
- * swap at the mint, present, middleware verify, entitlement push — then bank
- * the change. Banks on EVERY exit path (the 6/10 19:16 run burned the
- * bankroll by exiting on a timeout before banking; never again).
+ * Keeper smoke: pay JUST the spawn gate (10) through the full live path
+ * (swap at the mint, present, middleware verify, entitlement push), then bank
+ * the change. Banks on EVERY exit path.
  * usage: bun scripts/keeper-paytest.ts <serverBase> <bankrollTokenFile>
  */
 
@@ -41,7 +41,7 @@ console.log("config:", JSON.stringify(config));
 const bankAll = async (label: string): Promise<void> => {
   const remaining = await localInventory.load(config.mintUrl, config.unit);
   if (remaining.length === 0) {
-    console.log(`[bank:${label}] inventory empty — nothing to write`);
+    console.log(`[bank:${label}] inventory empty, nothing to write`);
     return;
   }
   const changeToken = getEncodedToken({ mint: config.mintUrl, proofs: remaining, unit: config.unit });
@@ -90,7 +90,7 @@ try {
   if (!res.ok) throw new Error(`payGate failed: ${JSON.stringify(res).slice(0, 160)}`);
 
   await waitFor((m) => (m.type === "entitlement" && m.gate === "spawn" ? true : undefined), "spawn entitlement");
-  console.log("✔ entitlement received — full live path OK");
+  console.log("✔ entitlement received; full live path OK");
   ws.close();
   ok = true;
 } catch (e) {

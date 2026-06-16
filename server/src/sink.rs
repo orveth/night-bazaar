@@ -5,12 +5,12 @@
 //! money: each `fresh_proofs` value is a spendable `cashuB…` bearer token the
 //! operator now controls. This module appends ONE JSONL line per redemption to
 //! `BAZAAR_REVENUE_SINK` and `flush()` + `sync_all()`s it to disk BEFORE the
-//! handler grants the entitlement / returns the play result — a crash between
+//! handler grants the entitlement / returns the play result; a crash between
 //! "grant" and "persist" would consume a pop with no record of the value.
 //!
 //! This is the bazaar's cousin of pops' own `pops-gateway::proofs_sink` (the
 //! `skills/gate-a-service.md` "the sink is a WALLET" rule). The record shape is
-//! the bazaar's: `{ts, gate, session, amount, unit, proofs}` — `gate` and
+//! the bazaar's: `{ts, gate, session, amount, unit, proofs}`. `gate` and
 //! `session` name WHICH gate/play and WHOSE request earned it; `proofs` carries
 //! the denormalized redeemed-proofs payload (the spendable bearer token plus
 //! its keyset id and the presented token's receipt hash).
@@ -33,7 +33,7 @@ use serde::Serialize;
 /// the record serializes without borrowing across the lock.
 #[derive(Debug, Serialize)]
 pub struct ProofsRecord {
-    /// The fresh bearer proofs as a `cashuB…` token string. SPENDABLE VALUE —
+    /// The fresh bearer proofs as a `cashuB…` token string. SPENDABLE VALUE:
     /// this is the operator's money; never log it or share it.
     pub fresh_proofs: String,
     /// Net value received: at least the gate/play price (excess presented value
@@ -41,11 +41,11 @@ pub struct ProofsRecord {
     pub amount: u64,
     /// Unit of the redeemed value (`pop_<ts>`).
     pub unit: String,
-    /// Keyset id (hex) the fresh proofs are signed under — for spending without
-    /// re-fetching keysets, and for audit.
+    /// Keyset id (hex) the fresh proofs are signed under (for spending without
+    /// re-fetching keysets, and for audit).
     pub active_keyset_id: String,
-    /// SHA-256 (lowercase hex) of the EXACT presented `payload.token` — a
-    /// stable, shareable settlement reference that exposes no secret.
+    /// SHA-256 (lowercase hex) of the EXACT presented `payload.token`:
+    /// a stable, shareable settlement reference that exposes no secret.
     pub token_hash: String,
 }
 
@@ -98,7 +98,7 @@ pub struct RevenueSink {
 
 impl RevenueSink {
     /// Open (creating if absent) `path` for append. Fails loudly if the file
-    /// cannot be opened — a sink we cannot write to means we would silently
+    /// cannot be opened; a sink we cannot write to means we would silently
     /// drop money, so the server must refuse to take payments without it.
     pub fn open(path: impl Into<PathBuf>) -> Result<Self, SinkError> {
         let path = path.into();

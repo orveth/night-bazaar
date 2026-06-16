@@ -21,7 +21,7 @@ use crate::vault::{Vault, VaultError};
 use crate::world::{region_of, step, step_y, MoveCaps, Region, JUMP_VY};
 use pops_core_verify::redeemer::Redeemed;
 
-/// Interaction reach for chests, world units (3D — rooftop finds need the
+/// Interaction reach for chests, world units (3D; rooftop finds need the
 /// jump apex to come into range).
 const INTERACT_RANGE: f64 = 3.0;
 /// Max display-name length (clipped, not rejected).
@@ -51,7 +51,7 @@ pub struct BellPlay {
 }
 
 /// Result of the shared reach gate (body + room + range + line of sight). The
-/// refusal carries the ws error to push (boxed — `ServerMsg::Hello` is large).
+/// refusal carries the ws error to push (boxed; `ServerMsg::Hello` is large).
 enum Reach {
     Ok,
     Refused(Box<ServerMsg>),
@@ -136,7 +136,7 @@ impl Player {
 pub struct GameInner {
     pub players: HashMap<String, Player>,
     /// One-shot per stock: set on first claim, cleared only by restart
-    /// (deliberate restock — design v1 "first finder takes"). Booth prize
+    /// (deliberate restock; design v1 "first finder takes"). Booth prize
     /// stocks share this map keyed by booth id, but unlike chests a booth is
     /// NOT one-shot: it depletes per win and is re-derived from live stock.
     pub chest_claimed: HashMap<String, bool>,
@@ -180,7 +180,7 @@ pub type AppState = Arc<Game>;
 
 /// Persist a redemption to the sink, mapping a sink failure to a value the
 /// caller can turn into an error response. A redemption with no sink configured
-/// is a programming error in live mode (the binary always wires one) — but
+/// is a programming error in live mode (the binary always wires one), but
 /// rather than panic mid-request we surface it as a persist failure so the
 /// caller refuses to grant rather than silently dropping the money.
 impl Game {
@@ -201,7 +201,7 @@ impl Game {
 
 /// Granting can fail only on an unknown session (the payment middleware runs
 /// FIRST, so by the time the handler sees the request the pop is already
-/// redeemed — an unknown session is a paid-but-unfulfillable request, the
+/// redeemed. An unknown session is a paid-but-unfulfillable request (the
 /// in-process cousin of the gateway's documented paid-but-upstream-down edge).
 #[derive(Debug, PartialEq, Eq)]
 pub enum GrantError {
@@ -366,7 +366,7 @@ impl Game {
                 let mut inner = self.inner.lock().unwrap();
                 if let Some(p) = inner.players.get_mut(session) {
                     // Bodies only (ghosts drift, they do not hop) and only
-                    // from the ground — no double jumps. Silent no-op
+                    // from the ground; no double jumps. Silent no-op
                     // otherwise: jump spam must not earn an error stream.
                     if p.kind == AvatarKind::Body && p.y == 0.0 && p.vy == 0.0 {
                         p.vy = JUMP_VY;
@@ -516,7 +516,7 @@ impl Game {
     /// The shared "can this session reach this world point" gate, used by both
     /// chest claims and booth engages: must be a BODY, in the right room, in
     /// the 3D interact sphere, AND with a clear line of sight (no stall wall
-    /// between player and target — fixes the quirk where chest.stall was
+    /// between player and target (fixes the quirk where chest.stall was
     /// claimable THROUGH the trinket stall). `noun` shapes the error prose.
     fn reach_check(
         &self,
@@ -545,7 +545,7 @@ impl Game {
             return refuse("wrong-room", format!("you are not where the {noun} is"));
         }
         // 3D reach: rooftop chests sit above the interact sphere from the
-        // ground — only the jump apex brings them into range.
+        // ground; only the jump apex brings them into range.
         let (dx, dy, dz) = (player.pos.0 - tx, player.y - ty, player.pos.1 - tz);
         if (dx * dx + dy * dy + dz * dz).sqrt() > INTERACT_RANGE {
             return refuse("out-of-range", format!("step closer to the {noun} (some need a jump)"));
@@ -662,7 +662,7 @@ impl Game {
     /// A paid GACHA pull's game-side effect, run AFTER the pop is redeemed +
     /// persisted. Requires the session to be a body in reach of the gacha
     /// booth (server-authoritative; a paid request from a ghost or someone not
-    /// at the shrine is refused — the pop is retained, the player retries in
+    /// at the shrine is refused; the pop is retained, the player retries in
     /// place). Advances the deterministic counter and pops a prize on a win.
     pub fn play_gacha(&self, session: &str, booth_id: &str) -> Result<GachaPlayOutcome, PlayError> {
         let mut inner = self.inner.lock().unwrap();
@@ -994,7 +994,7 @@ mod tests {
     use crate::world::default_world;
     use std::collections::BTreeMap;
 
-    /// Legacy-format vault (bare array = chest.jade's stock) — also proves
+    /// Legacy-format vault (bare array = chest.jade's stock); also proves
     /// the Phase-0 file format keeps working end to end.
     fn test_game(vault_tokens: &[&str]) -> (tempfile::TempDir, AppState) {
         test_game_raw(&serde_json::to_string(&vault_tokens).unwrap())
@@ -1049,7 +1049,7 @@ mod tests {
     }
 
     /// Walk a session straight to a coordinate (test-only teleport that still
-    /// respects nothing — used to position actors for interaction tests).
+    /// respects nothing; used to position actors for interaction tests).
     fn teleport(app: &AppState, session: &str, x: f64, z: f64) {
         let mut inner = app.inner.lock().unwrap();
         inner.players.get_mut(session).unwrap().pos = (x, z);
@@ -1550,7 +1550,7 @@ mod tests {
     /// THE QUIRK FIX: chest.stall must NOT be claimable through the trinket
     /// stall wall. A body at the stall's FRONT counter (street side) is within
     /// the 3.0 interact sphere of the chest behind it, but the footprint sits
-    /// between them — line of sight blocks the claim. Reaching it requires
+    /// between them; line of sight blocks the claim. Reaching it requires
     /// walking around to the hidden gap behind (the existing happy-path test).
     #[test]
     fn chest_stall_is_not_claimable_through_the_stall_wall() {

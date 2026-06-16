@@ -1,5 +1,5 @@
 /**
- * Synthesized ambience — no audio files, the whole soundscape is WebAudio
+ * Synthesized ambience: no audio files, the whole soundscape is WebAudio
  * nodes (asset budget: 0 bytes). Market murmur (filtered noise + wandering
  * voice-ish blips), lantern creaks, a noodle-stall sizzle that gets louder as
  * you approach (positional where cheap), a paid-door chime, a prize sparkle,
@@ -155,7 +155,7 @@ export class BazaarAudio {
     this.sizzle.gain.setTargetAtTime(target, this.ctx.currentTime, 0.25);
   }
 
-  /** Two-strike temple bell — a court door opened for you. */
+  /** Two-strike temple bell; plays when a court door opens for you. */
   chime(): void {
     if (!this.ctx) return;
     const ctx = this.ctx;
@@ -181,7 +181,7 @@ export class BazaarAudio {
     strike(ctx.currentTime + 0.22, 660, 0.1);
   }
 
-  /** Ascending pentatonic glitter — a chest opened. */
+  /** Ascending pentatonic glitter; plays when a chest opens. */
   sparkle(): void {
     if (!this.ctx) return;
     const ctx = this.ctx;

@@ -14,7 +14,9 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
-POPS=/srv/forge/projects/pops
+# Path to the pops repo checkout (MakePrisms/pops); set POPS in the environment
+# to override if your checkout is elsewhere.
+POPS="${POPS:?Set POPS to the path of your pops checkout (MakePrisms/pops)}"
 STAGE="$HERE/target/docker-stage"
 
 echo "==> [1/3] release build (pops devshell)"

@@ -1,6 +1,6 @@
 /**
  * Websocket client: session, intents out, snapshots in. Payments never ride
- * this socket — see payer.ts.
+ * this socket; see payer.ts.
  */
 
 import type {

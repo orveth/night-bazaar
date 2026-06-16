@@ -8,50 +8,49 @@ use crate::protocol::Mode;
 
 #[derive(Debug, Clone)]
 pub struct Config {
-    /// BAZAAR_BIND — listen address. Default = the turtle tailnet directive.
+    /// `BAZAAR_BIND`: listen address (host:port). Default: 0.0.0.0:8410.
     pub bind: SocketAddr,
-    /// BAZAAR_MINT_URL — the shared Mutinynet rig (never run your own mintd).
-    /// Server-side DIRECT URL used for mint probing, redeeming, and the proxy
-    /// upstream.  Semantics unchanged from before.
+    /// `BAZAAR_MINT_URL`: the Cashu mint URL (server-side direct, used for
+    /// probing, redeeming, and as the proxy upstream).
     pub mint_url: String,
-    /// BAZAAR_MINT_PUBLIC_URLS — comma-separated list of mint URLs as clients
-    /// see them (e.g. `http://localhost:8410/mint,http://100.x.x.x:8410/mint`).
+    /// `BAZAAR_MINT_PUBLIC_URLS`: comma-separated list of mint URLs as clients
+    /// see them (e.g. `http://localhost:8410/mint,http://192.0.2.1:8410/mint`).
     ///
-    /// - FIRST entry → `/api/config` `mintUrl` (browsers build wallets on it).
-    /// - FULL list   → middleware accepted-mints allowlist AND creqA `m` list.
+    /// - FIRST entry: `/api/config` `mintUrl` (browsers build wallets on it).
+    /// - FULL list: middleware accepted-mints allowlist AND creqA `m` list.
     ///
-    /// Unset → falls back to `[mint_url]`; dev stays zero-config.
+    /// Unset: falls back to `[mint_url]`; dev stays zero-config.
     pub mint_public_urls: Vec<String>,
-    /// BAZAAR_MODE — "live" (pops middleware, default) | "mock" (free gates).
+    /// `BAZAAR_MODE`: "live" (pops middleware, default) | "mock" (free gates).
     pub mode: Mode,
-    /// BAZAAR_PRICE_SPAWN / _JADE / _CRIMSON — pops per gate.
+    /// `BAZAAR_PRICE_SPAWN` / `_JADE` / `_CRIMSON`: pops per gate.
     pub price_spawn: u64,
     pub price_jade: u64,
     pub price_crimson: u64,
-    /// BAZAAR_PRICE_GACHA / _BELL — pops per paid play (booths).
+    /// `BAZAAR_PRICE_GACHA` / `_BELL`: pops per paid play (booths).
     pub price_gacha: u64,
     pub price_bell: u64,
-    /// BAZAAR_GACHA_N — deterministic gacha wins every Nth pull (server
+    /// `BAZAAR_GACHA_N`: deterministic gacha wins every Nth pull (server
     /// counter; no randomness).
     pub gacha_n: u64,
-    /// BAZAAR_SPEED — walk speed, world units/sec (server-authoritative; feel knob).
+    /// `BAZAAR_SPEED`: walk speed, world units/sec (server-authoritative; feel knob).
     pub speed: f64,
-    /// BAZAAR_VAULT — prize token file (JSON array of cashuB strings).
+    /// `BAZAAR_VAULT`: prize token file (JSON array of cashuB strings).
     pub vault_path: PathBuf,
-    /// BAZAAR_REVENUE_SINK — append-only JSONL of every redeemed gate/play
-    /// proof. THIS FILE IS A WALLET (spendable bearer value) — persist + back
+    /// `BAZAAR_REVENUE_SINK`: append-only JSONL of every redeemed gate/play
+    /// proof. THIS FILE IS A WALLET (spendable bearer value); persist and back
     /// it up. Default sits beside the vault.
     pub revenue_sink_path: PathBuf,
-    /// BAZAAR_STATIC — built client to serve at `/`.
+    /// `BAZAAR_STATIC`: built client to serve at `/`.
     pub static_dir: PathBuf,
-    /// BAZAAR_BINDING_KEY — hex server secret for challenge binding; unset =
-    /// per-boot key (outstanding challenges die on restart; clients refetch).
+    /// `BAZAAR_BINDING_KEY`: hex server secret for challenge binding; unset
+    /// uses a per-boot key (outstanding challenges die on restart; clients refetch).
     pub binding_key_hex: Option<String>,
-    /// BAZAAR_CHALLENGE_TTL_SECS — challenge `expires` lifetime.
+    /// `BAZAAR_CHALLENGE_TTL_SECS`: challenge `expires` lifetime.
     pub challenge_ttl_secs: u64,
-    /// BAZAAR_MINT_TIMEOUT_SECS — per-call bound on mint HTTP (503 beyond it).
+    /// `BAZAAR_MINT_TIMEOUT_SECS`: per-call bound on mint HTTP (503 beyond it).
     pub mint_timeout_secs: u64,
-    /// BAZAAR_UNIT_REFRESH_SECS — how often the background task re-probes
+    /// `BAZAAR_UNIT_REFRESH_SECS`: how often the background task re-probes
     /// `/v1/keysets` to refresh the accepted `pop_<ts>` unit set (so a rotation
     /// is picked up without a restart). Default 300 s (5 min).
     pub unit_refresh_secs: u64,
@@ -98,7 +97,7 @@ impl Config {
             }
         };
         Ok(Self {
-            bind: parse_or("BAZAAR_BIND", "100.96.251.111:8410".parse().unwrap())?,
+            bind: parse_or("BAZAAR_BIND", "0.0.0.0:8410".parse().unwrap())?,
             mint_url,
             mint_public_urls,
             mode,

@@ -1,3 +1,4 @@
+// INTERNAL DEV SCRIPT: not part of the game; used to carve prize/player tokens from the operator bankroll.
 /**
  * One-off keeper carve (6/10): from the live bankroll, carve
  *   - a 500-pop player token for gudnuf

@@ -40,10 +40,10 @@ impl MoveCaps {
 }
 
 /// The default world: one street, two courts, market stalls (occluders), and
-/// four chests — the original jade-court find plus the Phase-1a hidden three
+/// four chests: the original jade-court find plus the Phase-1a hidden three
 /// (rooftop / behind-a-stall / dark-alley-corner).
 pub fn default_world(price_spawn: u64, price_jade: u64, price_crimson: u64) -> World {
-    let _ = price_spawn; // spawn is a gate, not a room — priced in config only
+    let _ = price_spawn; // spawn is a gate, not a room (priced in config only)
 
     let stall = |id: &str, kind: &str, x: f64, z: f64, rot: f64, fp: [f64; 4]| StallSpec {
         id: id.into(),
@@ -94,7 +94,7 @@ pub fn default_world(price_spawn: u64, price_jade: u64, price_crimson: u64) -> W
             },
         ],
         chests: vec![
-            // Phase 0 court find — id and court preserved.
+            // Phase 0 court find; id and court preserved.
             ChestSpec {
                 id: "chest.jade".into(),
                 court: "jade".into(),
@@ -169,7 +169,7 @@ pub fn default_world(price_spawn: u64, price_jade: u64, price_crimson: u64) -> W
             stall("stall.lantern", "lantern", -26.0, -8.8, 0.0, [-28.0, -24.0, -10.0, -7.6]),
             stall("stall.fish", "fish", -19.0, -8.8, 0.0, [-21.0, -17.0, -10.0, -7.6]),
             stall("stall.tea", "tea", -12.0, -8.8, 0.0, [-14.0, -10.0, -10.0, -7.6]),
-            // The trinket stall floats 1.0 off the edge — chest.stall hides behind.
+            // The trinket stall floats 1.0 off the edge; chest.stall hides behind.
             stall("stall.trinket", "trinket", -5.0, -8.0, 0.0, [-7.0, -3.0, -9.0, -7.0]),
             stall("stall.skewer", "skewer", 2.0, -8.8, 0.0, [0.0, 4.0, -10.0, -7.6]),
             // chest.rooftop sits on this awning.
@@ -219,7 +219,7 @@ pub fn segment_blocked_by_stall(world: &World, a: (f64, f64), b: (f64, f64)) -> 
 fn segment_intersects_rect(a: (f64, f64), b: (f64, f64), r: &Rect) -> bool {
     let dx = b.0 - a.0;
     let dz = b.1 - a.1;
-    // Degenerate segment: it is a point — inside-rect already handled by the
+    // Degenerate segment: it is a point; inside-rect already handled by the
     // endpoint skip, so a zero-length segment never "crosses" a wall.
     let mut t0 = 0.0f64;
     let mut t1 = 1.0f64;
@@ -300,7 +300,7 @@ fn step_legal(world: &World, caps: &MoveCaps, from: (f64, f64), to: (f64, f64)) 
         (_, Region::Void) => false,
         (a, b) if a == b => true,
         // Street -> court: bodies only, entitled only, through the door gap
-        // only (both endpoints' x inside the gap — the step is a z-step, so
+        // only (both endpoints' x inside the gap; the step is a z-step, so
         // x is unchanged, but check both for robustness).
         (Region::Street, Region::Court(i)) => {
             let door = &world.courts[i].door;

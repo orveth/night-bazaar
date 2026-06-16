@@ -3,7 +3,7 @@
 //! over a mock `Redeemer` (no mint). The mock simulates only what the MINT
 //! decides in production: token value and double-spend. The real-money leg
 //! against the Mutinynet rig is a separate, manual gate (see the spike
-//! contract) — these tests prove OUR wiring, not the mint.
+//! contract); these tests prove OUR wiring, not the mint.
 
 use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
@@ -203,8 +203,8 @@ async fn post(
     (status, headers, String::from_utf8_lossy(&body).to_string())
 }
 
-/// Build a credential that faithfully echoes `params` and presents `token` —
-/// the same encoding path a real client uses (pops' own canonical encoder).
+/// Build a credential that faithfully echoes `params` and presents `token`
+/// via the same encoding path a real client uses (pops' own canonical encoder).
 fn credential_for(params: &PaymentParams, token: &str) -> String {
     let creds = PaymentCredentials {
         challenge: EchoedChallenge {
@@ -708,7 +708,7 @@ fn requirement_mints_contains_all_public_urls() {
 
     let public_urls = vec![
         "http://localhost:8410/mint",
-        "http://100.96.251.111:8410/mint",
+        "http://203.0.113.1:8410/mint", // TEST-NET-3 (RFC5737), safe in docs/tests
     ];
     let mints: Vec<cashu::MintUrl> = public_urls
         .iter()
@@ -733,7 +733,7 @@ fn requirement_mints_contains_all_public_urls() {
 }
 
 /// When `BAZAAR_MINT_PUBLIC_URLS` is unset, the requirement's mints list must
-/// fall back to the direct `BAZAAR_MINT_URL` — existing single-mint behavior
+/// fall back to the direct `BAZAAR_MINT_URL`; existing single-mint behavior
 /// preserved exactly.
 #[test]
 fn requirement_mints_falls_back_to_direct_url_when_public_unset() {

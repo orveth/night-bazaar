@@ -1,5 +1,5 @@
 /**
- * draft-cashu-charge-01 payer codec — written FRESH against the pops repo's
+ * draft-cashu-charge-01 payer codec: written FRESH against the pops repo's
  * `skills/payment-credential.md` (the audited wire description; source of
  * truth `pops/crates/pops-core-verify/src/envelope.rs` @ 7e366f0).
  *
@@ -10,7 +10,7 @@
  *   2. decode + sanity-check the base64url-nopad `request` object
  *      (`methodDetails.paymentRequest` = the authoritative NUT-18 creqA),
  *   3. build the `Authorization: Payment <blob>` credential: a JCS-canonical
- *      (RFC 8785) JSON object, base64url-nopad — echoing EVERY issued
+ *      (RFC 8785) JSON object, base64url-nopad, echoing EVERY issued
  *      challenge param verbatim (the server recomputes the HMAC `id` over the
  *      echo; a decode/re-encode of `request` would break it, so the b64 string
  *      is carried untouched).
@@ -26,7 +26,7 @@ export interface PaymentChallenge {
   realm: string;
   method: string;
   intent: string;
-  /** The base64url-nopad request envelope — echo BYTE-FOR-BYTE, never re-encode. */
+  /** The base64url-nopad request envelope: echo BYTE-FOR-BYTE, never re-encode. */
   request: string;
   expires?: string;
   digest?: string;
@@ -79,7 +79,7 @@ const KNOWN_PARAMS = [
 /**
  * Parse a `WWW-Authenticate: Payment …` header value (port of envelope.rs
  * `parse_payment_params`): values MUST be double-quoted strings (our values
- * never contain quotes or commas, so a naive comma split is safe — same rule
+ * never contain quotes or commas, so a naive comma split is safe (same rule
  * as the Rust parser); unknown params are tolerated; the scheme prefix is
  * optional.
  */
@@ -158,9 +158,9 @@ export function b64urlEncode(bytes: Uint8Array): string {
 
 /**
  * JCS-serialize a JSON value: lexicographically sorted object keys (by UTF-16
- * code units, which `Array.prototype.sort` does natively — exactly RFC 8785's
+ * code units, which `Array.prototype.sort` does natively, exactly RFC 8785's
  * ordering), minimal string escaping (native `JSON.stringify`), ECMAScript
- * number formatting (native too — RFC 8785 §3.2.2.3 IS the ECMAScript
+ * number formatting (native; RFC 8785 §3.2.2.3 IS the ECMAScript
  * algorithm). Our wire objects carry only strings and nested objects, but the
  * implementation is general for safety.
  */
@@ -222,7 +222,7 @@ export interface CreqaFacts {
  * Client MUSTs before paying (payment-credential.md §1): the creqA must name
  * `a`/`u` and a non-empty `m`, and the top-level `amount`/`currency` must
  * agree with them (amount compared as integers). Also refuse a challenge
- * whose `expires` is already past — re-fetch instead.
+ * whose `expires` is already past; re-fetch instead.
  */
 export function assertPayable(
   challenge: PaymentChallenge,
@@ -274,7 +274,7 @@ export function assertPayable(
 /**
  * Build the `Authorization` header value: `Payment ` + base64url-nopad over
  * the JCS-canonical credentials object. The challenge echo carries EVERY
- * param the 402 issued (and nothing it did not — absent optionals are omitted
+ * param the 402 issued (and nothing it did not; absent optionals are omitted
  * from the JSON, matching serde's `skip_serializing_if`).
  */
 export function buildCredential(

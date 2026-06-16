@@ -1,4 +1,4 @@
-//! Booth game logic — the PURE, deterministic core (no clock, no randomness).
+//! Booth game logic: the PURE, deterministic core (no clock, no randomness).
 //!
 //! The three booths are server-authoritative minigames:
 //!   - the riddle lantern (free, jade court): a fixed server-held set; a correct
@@ -6,12 +6,12 @@
 //!     normalized (case/whitespace/punctuation-insensitive) with a small set of
 //!     accepted spellings per riddle.
 //!   - the gacha shrine (paid, crimson court): a DETERMINISTIC every-Nth-wins
-//!     counter. No randomness — auditable, and it dodges the gambling vibe. The
+//!     counter. No randomness (auditable, dodges the gambling vibe). The
 //!     fortune line is chosen by the same counter.
 //!   - the timing bell (paid, street): the pure part is the OFFSET-to-verdict
 //!     judgement; the clock lives in `game.rs`. The pendulum swings with period
 //!     `period_ms`; the sweet spot is the bottom of the swing. The seed only
-//!     drives the client's *visual* starting phase — the server judges against
+//!     drives the client's *visual* starting phase; the server judges against
 //!     elapsed wall-time, so a scripted client cannot pre-compute a win the
 //!     server clock would not allow.
 //!
@@ -111,7 +111,7 @@ pub struct GachaOutcome {
 }
 
 /// Deterministic gacha: the `count`-th pull (1-based) wins iff `count` is a
-/// multiple of `n`. No randomness — the counter alone decides, so the whole
+/// multiple of `n`. No randomness: the counter alone decides, so the whole
 /// payout schedule is auditable. `n == 0` is treated as "never wins" (guards
 /// against a misconfigured `BAZAAR_GACHA_N=0`).
 pub fn gacha_outcome(count: u64, n: u64) -> GachaOutcome {
@@ -143,7 +143,7 @@ pub fn bell_offset_ms(elapsed_ms: u64, period_ms: u64) -> u64 {
 
 /// Did the bell press at `elapsed_ms` land within `tolerance_ms` of a sweet
 /// spot? A press before the play even started (elapsed 0 is allowed; the
-/// caller rejects negative/expired) that lands on a crossing still counts —
+/// caller rejects negative/expired) that lands on a crossing still counts;
 /// the server clock is the only authority.
 pub fn bell_is_hit(elapsed_ms: u64, period_ms: u64, tolerance_ms: u64) -> bool {
     bell_offset_ms(elapsed_ms, period_ms) <= tolerance_ms

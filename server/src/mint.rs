@@ -7,7 +7,7 @@
 //! whole VALID SET, not a single unit:
 //!
 //!   * A keyset's unit is VALID iff its `final_expiry` is in the future. The
-//!     `active` flag is NOT used — it lies: the mint keeps the just-retired
+//!     `active` flag is NOT used: it lies. The mint keeps the just-retired
 //!     keyset `active:true` until its `final_expiry` passes, and freshly minted
 //!     keysets can read `active:false` (cdk-pop regenerates the active keyset on
 //!     every restart). Selecting by `active` would gate on a DEAD unit. (Ground
@@ -50,7 +50,7 @@ pub struct UnitInfo {
     pub unit: String,
     /// The unit's latest FUTURE keyset `final_expiry` (Unix seconds). Always
     /// `Some` for a unit in the valid set (a unit needs a future dated keyset to
-    /// be valid at all — see [`pick_valid_units`]); the `Option` is kept so test
+    /// be valid at all; see [`pick_valid_units`]); the `Option` is kept so test
     /// fixtures and the type read naturally.
     pub final_expiry: Option<u64>,
 }
@@ -94,7 +94,7 @@ impl ValidUnits {
 ///     validity.
 ///   * Each valid unit carries the LATEST future `final_expiry` seen for it.
 ///   * `newest` is the unit with the latest `final_expiry` (the mint-into one).
-///   * The `active` flag is deliberately ignored — it lies (a retired keyset
+///   * The `active` flag is deliberately ignored (it lies: a retired keyset
 ///     reads `active:true`; a live one can read `active:false`).
 fn pick_valid_units(rows: &[(String, Option<u64>)], now: u64) -> Option<ValidUnits> {
     // Per unit, the latest FUTURE dated expiry (undated keysets contribute
@@ -175,7 +175,7 @@ pub async fn fetch_valid_pop_units(
     pick_valid_units(&rows, now_unix()).ok_or_else(|| {
         anyhow!(
             "mint at {mint_url} advertises no VALID pop_<ts> keyset \
-             (every pop unit's final_expiry has passed — has the rig been \
+             (every pop unit's final_expiry has passed; has the rig been \
              re-registered with a fresh unit?)"
         )
     })
@@ -202,11 +202,11 @@ mod tests {
         // retired unit's tokens stop swapping at its past final_expiry, so it
         // MUST drop even though it still has a served (undated) keyset.
         let rows = vec![
-            row("pop_1781127717", Some(1_781_120_517)), // active:true  — PAST → dead
-            row("pop_1781713156", None),                // active:false — undated (ignored)
-            row("pop_1781127717", None),                // active:false — undated (must NOT rescue)
-            row("pop_1781713156", Some(1_781_705_956)), // active:false — future
-            row("pop_1781713156", Some(1_781_705_956)), // active:true  — future
+            row("pop_1781127717", Some(1_781_120_517)), // active:true,  PAST expiry -> dead
+            row("pop_1781713156", None),                // active:false, undated (ignored)
+            row("pop_1781127717", None),                // active:false, undated (must NOT rescue)
+            row("pop_1781713156", Some(1_781_705_956)), // active:false, future expiry
+            row("pop_1781713156", Some(1_781_705_956)), // active:true,  future expiry
         ];
         let v = pick_valid_units(&rows, NOW).expect("a valid set");
         assert_eq!(

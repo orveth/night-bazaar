@@ -318,6 +318,71 @@
           rgba(4, 2, 10, 0.55) 100%
         );
       }
+      /* ⓘ info affordance: unobtrusive corner button + compact panel */
+      .hud-info-btn {
+        position: absolute;
+        bottom: 36px;
+        right: 12px;
+        background: rgba(12, 8, 20, 0.6);
+        color: #b9a8d8;
+        border: 1px solid #3a2c5c;
+        border-radius: 5px;
+        padding: 2px 7px;
+        font-family: inherit;
+        font-size: 13px;
+        cursor: pointer;
+        line-height: 1.4;
+      }
+      .hud-info-btn:hover {
+        border-color: #6a5aad;
+        color: #e8e2f5;
+      }
+      .hud-info-panel {
+        position: absolute;
+        bottom: 64px;
+        right: 12px;
+        width: 300px;
+        background: rgba(20, 14, 36, 0.97);
+        border: 1px solid #4d3a78;
+        border-radius: 8px;
+        padding: 12px 14px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #c8bfe8;
+      }
+      .info-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 13px;
+        color: #e8e2f5;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+      }
+      .info-close {
+        background: none;
+        border: none;
+        color: #7a6a9a;
+        font-size: 13px;
+        cursor: pointer;
+        padding: 0 2px;
+        line-height: 1;
+      }
+      .info-close:hover { color: #e8e2f5; }
+      .hud-info-panel .info-body p {
+        margin: 0 0 7px 0;
+      }
+      .hud-info-panel .info-body p:last-child {
+        margin-bottom: 0;
+      }
+      .hud-info-panel a {
+        color: #9b7fe8;
+        text-decoration: none;
+      }
+      .hud-info-panel a:hover {
+        text-decoration: underline;
+      }
     </style>
   </head>
   <body>

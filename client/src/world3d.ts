@@ -1,7 +1,7 @@
 /**
  * Three.js scene, Phase 1a: the night-market look. WebGPURenderer with its
  * automatic WebGL2 fallback (`?webgl=1` forces the fallback for A/B), and a
- * post chain that blooms ONLY the emissive MRT channel — lanterns, neon and
+ * post chain that blooms ONLY the emissive MRT channel: lanterns, neon and
  * portals glow, the rest stays inky.
  *
  * Avatars: ghosts are translucent drifting wisps; bodies are procedural
@@ -29,7 +29,7 @@ interface Bubble {
 
 interface AvatarBundle {
   group: THREE.Group;
-  /** The wisp or alien — swapped when kind flips. */
+  /** The wisp or alien; swapped when kind flips. */
   visual: THREE.Group;
   tag: THREE.Sprite;
   target: THREE.Vector3;

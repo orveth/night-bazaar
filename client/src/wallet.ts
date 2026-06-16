@@ -3,8 +3,8 @@
  *
  * The cashu-ts machinery (exact-amount NUT-03 swap via `Wallet.send`, the
  * v2-short-keyset `normalizePopProofIds` fix) is REUSED from
- * `@mpp-jams/fetch-with-pop`'s `createCashuPopWallet` — the parts of that
- * package the contract keeps alive. (Its old flat 402 envelope is dead and
+ * `@mpp-jams/fetch-with-pop`'s `createCashuPopWallet`, keeping the parts
+ * the contract needs alive. (Its old flat 402 envelope is dead and
  * not imported; the wire lives in `charge01.ts`.)
  *
  * Storage patterns (denormalized number amounts, consume-once commit,
@@ -12,7 +12,7 @@
  * from the proven iframe-wallet (`iframe-wallet/src/wallet/{storage,wallet}.ts`).
  *
  * Mint URL + unit are RUNTIME values (from the server's /api/config, which
- * read them from the mint's /v1/keysets) — never compiled in.
+ * read them from the mint's /v1/keysets), never compiled in.
  */
 
 import {
@@ -107,7 +107,7 @@ export const addProofs = (
 /* --------------- tolerant cashuB decode (cdk short keyset ids) ------------ */
 
 /**
- * Pull keyset-id bytestrings (`t[].i`) out of a cashuB token's CBOR — a
+ * Pull keyset-id bytestrings (`t[].i`) out of a cashuB token's CBOR: a
  * minimal walk, no CBOR library. Ported from the proven iframe-wallet (which
  * ported it from the extension SW). Needed because cashu-ts
  * `getDecodedToken` throws on a cdk pop token carrying a v2 SHORT keyset id
@@ -212,7 +212,7 @@ export const decodeTokenTolerant = (
 
 /**
  * Import a pasted cashuB into this origin's inventory. The wallet's
- * (mintUrl, unit) slot is authoritative — the embedded mint URL is a hint;
+ * (mintUrl, unit) slot is authoritative; the embedded mint URL is a hint,
  * the unit must match the active one or the verifier would reject it anyway.
  */
 export const importToken = (
@@ -240,7 +240,7 @@ export const importToken = (
 /**
  * Build the PopWallet (exact-amount splitter): decodes creqA, swaps to
  * EXACTLY the requested amount against the mint (overpay would be RETAINED
- * by the verifier — never present more), commits the remainder.
+ * by the verifier (never present more), commits the remainder.
  */
 export const buildPopWallet = (mintUrl: string, unit: string): PopWallet => {
   const wallet = new Wallet(new Mint(mintUrl), { unit });

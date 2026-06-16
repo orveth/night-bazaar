@@ -3,8 +3,8 @@
  *
  * Free ghost on connect; [B] pays the spawn gate; walking near a court door
  * shows a pay prompt ([E]); near a chest (as a body, in the right place),
- * [E] claims — rooftop finds need [Space] mid-air. Enter/T talks (bodies).
- * All payments are plain HTTP through payer.ts — the ws only delivers the
+ * [E] claims; rooftop finds need [Space] mid-air. Enter/T talks (bodies).
+ * All payments are plain HTTP through payer.ts; the ws only delivers the
  * resulting entitlement. PAYMENT SEAMS UNTOUCHED in Phase 1a.
  */
 

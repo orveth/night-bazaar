@@ -1,3 +1,4 @@
+// INTERNAL DEV SCRIPT: not part of the game; used for live operator smoke tests.
 /**
  * Keeper LIVE-MONEY booth smoke against the shared Mutinynet rig. Proves the
  * two PAID booth flows end to end through the production payer:
@@ -10,7 +11,7 @@
  *
  * SAFETY: spends REAL (test-sat) pops from the FOR-MPP-JAMS bankroll, and banks
  * ALL remaining change to the bankroll file on EVERY exit path (a prior script
- * burned the bankroll by exiting before banking — never again).
+ * burned the bankroll by exiting before banking; safeguard added).
  *
  * usage: bun scripts/keeper-booth-paytest.ts <serverBase> <bankrollTokenFile>
  */
@@ -52,7 +53,7 @@ console.log("config:", JSON.stringify(config));
 const bankAll = async (label: string): Promise<void> => {
   const remaining = await localInventory.load(config.mintUrl, config.unit);
   if (remaining.length === 0) {
-    console.log(`[bank:${label}] inventory empty — nothing to write`);
+    console.log(`[bank:${label}] inventory empty, nothing to write`);
     return;
   }
   const changeToken = getEncodedToken({ mint: config.mintUrl, proofs: remaining, unit: config.unit });

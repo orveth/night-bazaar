@@ -1,7 +1,7 @@
 /**
  * The night-market set: street, stalls (kitbashed from primitives, batched
  * into few draw calls), court gates with in-world price signage, lantern
- * strings, steam, skyline, chests. Everything is procedural — the only
+ * strings, steam, skyline, chests. Everything is procedural: the only
  * "assets" are canvas textures drawn at boot.
  *
  * SERVER TRUTH: stall footprints and court walls come straight from the
@@ -75,7 +75,7 @@ function glow(emissive: number, intensity: number, body = 0x121016): THREE.MeshS
 }
 
 /* ------------------------------- batcher ----------------------------------
- * Bakes transformed primitives into ONE merged geometry per material key —
+ * Bakes transformed primitives into ONE merged geometry per material key;
  * the whole static market lands in ~30 draw calls. */
 
 class Batcher {
@@ -271,7 +271,7 @@ function buildGroundAndSky(
     group.add(floor);
   }
 
-  // Stars (fog off — they live beyond it).
+  // Stars (fog off; they live beyond it).
   {
     const n = 240;
     const pos = new Float32Array(n * 3);
@@ -357,7 +357,7 @@ function buildGroundAndSky(
     });
   }
 
-  // NOTE: no south backdrop — the chase camera lives south of the street
+  // NOTE: no south backdrop; the chase camera lives south of the street
   // (z ≈ player − 11.5) looking north; anything tall back there would sit
   // INSIDE the camera frustum and curtain the whole frame (found the hard
   // way: a 9-unit wall at minZ−4 blacked out the entire scene).
@@ -611,7 +611,7 @@ function buildStall(
     batch.box("wood.mid", [s, s, s], place(rfloat(rng, -W * 0.3, W * 0.3), roofH + s / 2 + 0.06, rfloat(rng, -D * 0.2, D * 0.2), rfloat(rng, 0, 1)));
   }
 
-  // South-row stalls show the camera their BACKS — dress them: a rooftop
+  // South-row stalls show the camera their BACKS; dress them: a rooftop
   // neon board facing the camera + a warm bulb string along the back edge,
   // so the foreground band reads as stacked Kowloon signage, not black boxes.
   if (Math.abs(stall.rot) < 0.1) {
@@ -855,7 +855,7 @@ function buildLanternStrings(
   ];
   for (const inst of instances) group.add(inst);
 
-  // Caps batched once (static — the sway is too subtle to move the caps).
+  // Caps batched once (static; the sway is too subtle to move the caps).
   for (const h of hungs) {
     batch.cyl("wood.dark", 0.07, 0.09, 0.09, at(h.base.x, h.base.y + 0.26, h.base.z));
   }

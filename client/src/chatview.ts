@@ -1,5 +1,5 @@
 /**
- * Chat bubble presentation math — pure + DOM-free so bun can unit-test it.
+ * Chat bubble presentation math: pure + DOM-free so bun can unit-test it.
  * The sprite plumbing lives in world3d.ts; these functions decide wrapping
  * and how a bubble fades with age and distance.
  */
@@ -58,7 +58,7 @@ export function wrapBubble(
 
 /**
  * Bubble opacity in [0,1] from age and distance to the viewer's avatar.
- * Age fades the tail; distance fades linearly NEAR..FAR (proximity chat —
+ * Age fades the tail; distance fades linearly NEAR..FAR (proximity chat:
  * far speech reads as unintelligible market murmur, which the ambience
  * track supplies).
  */

@@ -1,5 +1,6 @@
+// INTERNAL DEV SCRIPT: not part of the game; the full live-money end-to-end verification suite.
 /**
- * LIVE MONEY E2E against the shared Mutinynet rig — run on the turtle box:
+ * LIVE MONEY E2E against the shared Mutinynet rig.
  *
  *   bun scripts/live-money.ts <serverBase> <bankrollTokenFile> <outDir> <vaultFile>
  *
@@ -64,7 +65,7 @@ const fail = (name: string, detail: unknown): never => {
   process.exit(1);
 };
 
-/* 1 — config */
+/* 1: config */
 const config = (await (await fetch(`${serverBase}/api/config`)).json()) as {
   mintUrl: string;
   unit: string;
@@ -75,14 +76,14 @@ if (config.mode !== "live") fail("config", `server mode is ${config.mode}, want 
 if (!config.unit.startsWith("pop_")) fail("config", `unit ${config.unit}`);
 step("config", config);
 
-/* 2 — bankroll in */
+/* 2: bankroll in */
 const bankroll = (await Bun.file(bankrollFile).text()).trim();
 importToken(bankroll, config.mintUrl, config.unit);
 const opening = getBalance(config.mintUrl, config.unit);
 step("bankroll-imported", opening);
 const wallet = buildPopWallet(config.mintUrl, config.unit);
 
-/* 3 — ws session */
+/* 3: ws session */
 type Msg = Record<string, unknown>;
 const inbox: Msg[] = [];
 const ws = new WebSocket(`${serverBase.replace(/^http/, "ws")}/ws`);
@@ -105,7 +106,7 @@ const session = await waitFor(
 step("session", { session });
 const send = (m: unknown) => ws.send(JSON.stringify(m));
 
-/* 4 — spawn paid with this codec, challenge held manually (for the replay) */
+/* 4: spawn paid with this codec, challenge held manually (for the replay) */
 const spawnUrl = `${serverBase}/spawn`;
 const bare = await fetch(spawnUrl, { method: "POST", headers: { [SESSION_HEADER]: session } });
 if (bare.status !== 402) fail("spawn-bare", `status ${bare.status}`);
@@ -125,7 +126,7 @@ const receipt = paid.headers.get("payment-receipt");
 await waitFor((m) => (m.type === "entitlement" && m.gate === "spawn" ? true : undefined), "spawn-entitlement");
 step("spawn-paid", { amount: creqa.amount, receipt: receipt?.slice(0, 24) + "…" });
 
-/* 5 — replay the EXACT spent credential -> 402 verification-failed */
+/* 5: replay the EXACT spent credential -> 402 verification-failed */
 const replay = await fetch(spawnUrl, {
   method: "POST",
   headers: { [SESSION_HEADER]: session, authorization: spawnAuth },
@@ -136,7 +137,7 @@ const replaySlug = problemSlug(replayBody);
 if (replaySlug !== "verification-failed") fail("replay", `slug ${replaySlug}`);
 step("replay-rejected", { status: replay.status, slug: replaySlug });
 
-/* 6 — jade through the production payer */
+/* 6: jade through the production payer */
 const jade = await payGate(`${serverBase}/enter/jade`, session, wallet, {
   maxAmount: config.prices["court.jade"]!,
   mintUrl: config.mintUrl,
@@ -145,7 +146,7 @@ if (!jade.ok) fail("jade-paid", jade);
 await waitFor((m) => (m.type === "entitlement" && m.gate === "court.jade" ? true : undefined), "jade-entitlement");
 step("jade-paid", { spent: jade.spent, receipt: jade.receipt ? "yes" : "no" });
 
-/* 7 — wrong amount: a 10-pop token against the 50-pop jade challenge */
+/* 7: wrong amount: a 10-pop token against the 50-pop jade challenge */
 const bareJade = await fetch(`${serverBase}/enter/jade`, {
   method: "POST",
   headers: { [SESSION_HEADER]: session },
@@ -161,11 +162,11 @@ const wrongSlug = problemSlug(wrongBody);
 if (wrong.status !== 402 || wrongSlug !== "payment-insufficient") {
   fail("wrong-amount", { status: wrong.status, slug: wrongSlug });
 }
-// The under-amount token was rejected BEFORE the swap — still ours; reclaim it.
+// The under-amount token was rejected BEFORE the swap; still ours: reclaim it.
 importToken(tenToken, config.mintUrl, config.unit);
 step("wrong-amount-rejected", { status: wrong.status, slug: wrongSlug, reclaimed: 10 });
 
-/* 8 — stock the vault with a real 21-pop prize, walk to the chest, claim */
+/* 8: stock the vault with a real 21-pop prize, walk to the chest, claim */
 const prizeToken = await wallet.payPopRequest({ amount: 21, unit: config.unit, mints: [config.mintUrl] });
 await Bun.write(vaultFile, JSON.stringify([prizeToken]));
 step("vault-stocked", { amount: 21, file: vaultFile });
@@ -219,7 +220,7 @@ step("double-claim-rejected", { code: dbl });
 // The prize is REAL ecash: bring it back into the bankroll so nothing leaks.
 importToken(prize, config.mintUrl, config.unit);
 
-/* 9 — carve the browser bankroll + persist the change */
+/* 9: carve the browser bankroll + persist the change */
 const browserToken = await wallet.payPopRequest({ amount: 250, unit: config.unit, mints: [config.mintUrl] });
 await Bun.write(`${outDir}/browser-bankroll.txt`, browserToken);
 

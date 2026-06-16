@@ -1,3 +1,4 @@
+// INTERNAL DEV SCRIPT: not part of the game; used to debug payment flows step-by-step.
 /**
  * Instrumented one-off: replicate payGate's steps manually against /spawn,
  * print the FULL problem body on failure, and bank ALL remnants to a file on
@@ -77,7 +78,7 @@ try {
   console.log("present body:", (await r2.text()).slice(0, 600));
 
   if (r2.status !== 200) {
-    // un-redeemed credential token is still money — reclaim it to inventory
+    // un-redeemed credential token is still money; reclaim it to inventory
     importToken(token, config.mintUrl, config.unit);
     console.log("reclaimed un-redeemed credential token to inventory");
   }

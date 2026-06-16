@@ -6,7 +6,7 @@
 //! `from_fn_with_state(state, require_charge)`. The middleware answers a bare
 //! POST with the 402 + `WWW-Authenticate: Payment` challenge, verifies and
 //! REDEEMS the credential on retry, and only then lets the handler run; the
-//! handler's only job is the game-side effect — mark the (session, gate)
+//! handler's only job is the game-side effect: mark the (session, gate)
 //! entitlement and let the ws layer open the door.
 //!
 //! Generic over `C: Redeemer` so the integration tests drive the REAL
@@ -34,7 +34,7 @@ use crate::protocol::SESSION_HEADER;
 
 /// The three per-gate middleware states (different prices -> different
 /// challenges). `None` builds the mock router (BAZAAR_MODE=mock): same
-/// handlers, NO payment layer — dev/smoke only, loudly logged at boot.
+/// handlers, NO payment layer (dev/smoke only, loudly logged at boot).
 pub struct GateStates<C: Redeemer + Send + Sync + 'static> {
     pub spawn: Arc<ChargeMiddlewareState<C>>,
     pub jade: Arc<ChargeMiddlewareState<C>>,
@@ -109,7 +109,7 @@ pub fn gated_router<C: Redeemer + Send + Sync + 'static>(
 /// (the unit-dispatch middleware) over a shared [`MultiUnitGates`] registry
 /// instead of a single fixed-unit [`ChargeMiddlewareState`]. The handlers are
 /// unchanged. This is the live router; the rotation/overlap fix lives entirely
-/// in the dispatch layer (the verifier is untouched — see
+/// in the dispatch layer (the verifier is untouched; see
 /// [`crate::multiunit`]).
 pub fn gated_router_multi<C: Redeemer + Send + Sync + 'static>(
     app: AppState,
@@ -225,7 +225,7 @@ pub fn mock_router(app: AppState) -> Router {
 ///
 /// Runs AFTER `require_charge`, so the pop is already verified + redeemed
 /// (value held). A missing/unknown session id can no longer refuse the
-/// payment — it can only refuse the entitlement; the client guards by always
+/// payment; it can only refuse the entitlement. The client guards by always
 /// connecting the ws first. This mirrors the gateway's documented
 /// paid-but-upstream-down v1 edge.
 async fn gate_paid(
@@ -249,13 +249,13 @@ async fn gate_paid(
             // Last-resort: name the lost token's RECEIPT hash (never the
             // proofs) and refuse the request. The pop was redeemed and is
             // retained as fresh proofs; an operator can recover from the mint
-            // logs + this hash. We do NOT grant — the player can retry, and
+            // logs + this hash. We do NOT grant; the player can retry, and
             // the verifier's replay guard prevents a second charge.
             error!(
                 %session,
                 gate = gate_id,
                 token_hash = %r.proofs.token_hash,
-                "REVENUE SINK WRITE FAILED — value redeemed but not persisted: {e}"
+                "REVENUE SINK WRITE FAILED; value redeemed but not persisted: {e}"
             );
             return problem(
                 StatusCode::INTERNAL_SERVER_ERROR,
@@ -349,7 +349,7 @@ async fn play_paid(
                 %session,
                 gate = %play_gate_id(kind),
                 token_hash = %r.proofs.token_hash,
-                "REVENUE SINK WRITE FAILED on a paid play — value redeemed, not persisted: {e}"
+                "REVENUE SINK WRITE FAILED on a paid play; value redeemed, not persisted: {e}"
             );
             return problem(
                 StatusCode::INTERNAL_SERVER_ERROR,
@@ -391,7 +391,7 @@ async fn play_paid(
                     "play": "bell",
                     "playId": play_id,
                     // A per-play visual seed for the pendulum's starting phase
-                    // (client render only — the server judges by wall time).
+                    // (client render only; the server judges by wall time).
                     "seed": play_seed(&play_id),
                     "periodMs": period_ms,
                     "toleranceMs": tolerance_ms,
@@ -445,7 +445,7 @@ fn play_gate_id(kind: PlayKind) -> String {
 
 /// A deterministic per-play visual seed derived from the play id (no
 /// randomness; the id is already unique per play). The seed only shapes the
-/// client pendulum's starting phase — the server clock is authoritative.
+/// client pendulum's starting phase (the server clock is authoritative).
 fn play_seed(play_id: &str) -> u32 {
     let mut h: u32 = 2166136261;
     for b in play_id.bytes() {
