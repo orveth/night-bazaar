@@ -85,7 +85,7 @@ export class Hud {
           <a href="https://github.com/orveth/night-bazaar" target="_blank" rel="noopener">GitHub</a></p>
         <p><strong>HTTP 402:</strong> game actions are gated by real micropayments (402 Payment Required) instead of logins or captchas.</p>
         <p><strong>Cashu / pops:</strong> payments are <a href="https://cashu.space" target="_blank" rel="noopener">Cashu</a> ecash bearer tokens.
-          Pops is the cashu-based accept layer that verifies them server-side.</p>
+          Pops is the cashu-based <a href="https://github.com/gudnuf/cashu-mpp" target="_blank" rel="noopener">accept layer</a> that verifies them server-side.</p>
       </div>
     `;
 
