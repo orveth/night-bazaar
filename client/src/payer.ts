@@ -26,6 +26,11 @@ import {
   type PaymentChallenge,
 } from "./charge01.ts";
 import type { PopWallet } from "@mpp-jams/fetch-with-pop";
+import {
+  clearPendingPresentation,
+  findPendingPresentationByToken,
+  reclaimPendingPresentations,
+} from "./wallet.ts";
 import { SESSION_HEADER } from "../../protocol/protocol.ts";
 
 export interface PayGateResult {
@@ -127,47 +132,66 @@ export async function payGate(
     };
   }
 
-  // 3. Split to EXACTLY the amount (consume-once; remainder stays home).
+  // 3. Split to EXACTLY the amount (consume-once; remainder stays home). The
+  //    wallet stashes the produced token to the pending-presentation store
+  //    during this call (F6): it is unspent + recoverable until a verifier
+  //    confirms a 200.
   const token = await wallet.payPopRequest(creqa);
+  const pending = findPendingPresentationByToken(token);
 
-  // 4. Present; walk the documented retry edges with the SAME token.
-  let presentAgainst = challenge;
-  let expiredRetries = 0;
-  let unreachableRetries = 0;
-  for (;;) {
-    const resp = await post(buildCredential(presentAgainst, token));
-    if (resp.ok) {
-      return {
-        ok: true,
-        status: resp.status,
-        spent: creqa.amount,
-        receipt: resp.headers.get("payment-receipt") ?? undefined,
-        body: await bodyOf(resp),
-      };
-    }
-    if (resp.status === 503 && unreachableRetries === 0) {
-      // Mint unreachable: token NOT consumed; retry once after Retry-After.
-      unreachableRetries = 1;
-      const after = Number.parseInt(resp.headers.get("retry-after") ?? "2", 10);
-      await sleep(Math.min(after, 5) * 1000);
-      continue;
-    }
-    if (resp.status === 402) {
-      const slug = await reasonOf(resp);
-      if (slug === "payment-expired" && expiredRetries === 0) {
-        // Re-present the same token against the fresh challenge, once.
-        expiredRetries = 1;
-        presentAgainst = challengeOf(resp);
+  // 4. Present; walk the documented retry edges with the SAME token. The token
+  //    is consumed at the verifier ONLY on a 200 — clear the pending entry then.
+  //    Every OTHER terminal exit (a 400/402, keyset death, a 503 that never
+  //    recovers, an exception, a tab-close-equivalent abandonment) leaves the
+  //    token unspent, so the `finally` re-imports it into spendable inventory:
+  //    the produced value is never stranded (F6).
+  let consumed = false;
+  try {
+    let presentAgainst = challenge;
+    let expiredRetries = 0;
+    let unreachableRetries = 0;
+    for (;;) {
+      const resp = await post(buildCredential(presentAgainst, token));
+      if (resp.ok) {
+        consumed = true; // 200: the verifier redeemed the token.
+        return {
+          ok: true,
+          status: resp.status,
+          spent: creqa.amount,
+          receipt: resp.headers.get("payment-receipt") ?? undefined,
+          body: await bodyOf(resp),
+        };
+      }
+      if (resp.status === 503 && unreachableRetries === 0) {
+        // Mint unreachable: token NOT consumed; retry once after Retry-After.
+        unreachableRetries = 1;
+        const after = Number.parseInt(resp.headers.get("retry-after") ?? "2", 10);
+        await sleep(Math.min(after, 5) * 1000);
         continue;
       }
-      return { ok: false, status: 402, spent: creqa.amount, reason: slug };
+      if (resp.status === 402) {
+        const slug = await reasonOf(resp);
+        if (slug === "payment-expired" && expiredRetries === 0) {
+          // Re-present the same token against the fresh challenge, once. A
+          // payment-expired does NOT consume the token, so it stays pending.
+          expiredRetries = 1;
+          presentAgainst = challengeOf(resp);
+          continue;
+        }
+        return { ok: false, status: 402, spent: creqa.amount, reason: slug };
+      }
+      return {
+        ok: false,
+        status: resp.status,
+        spent: creqa.amount,
+        reason: await reasonOf(resp),
+      };
     }
-    return {
-      ok: false,
-      status: resp.status,
-      spent: creqa.amount,
-      reason: await reasonOf(resp),
-    };
+  } finally {
+    if (pending) {
+      if (consumed) clearPendingPresentation(pending.id);
+      else reclaimPendingPresentations(pending.id); // re-import the unspent token
+    }
   }
 }
 

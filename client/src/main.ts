@@ -22,7 +22,15 @@ import { Scene3D } from "./world3d.ts";
 import { Hud } from "./hud.ts";
 import { BoothUI } from "./booths.ts";
 import { payGate } from "./payer.ts";
-import { buildPopWallet, getBalance, importToken } from "./wallet.ts";
+import {
+  buildPopWallet,
+  buildProofStateChecker,
+  getBalance,
+  importTokenChecked,
+  InventoryWriteError,
+  onInventoryChanged,
+  reclaimPendingPresentations,
+} from "./wallet.ts";
 import { BazaarAudio } from "./audio.ts";
 import { FakeCrowd } from "./fakecrowd.ts";
 import type { PopWallet } from "@mpp-jams/fetch-with-pop";
@@ -44,14 +52,7 @@ const audio = new BazaarAudio();
 
 const hud = new Hud(hudRoot, {
   onImport(token) {
-    if (!config) return;
-    try {
-      const { added } = importToken(token, config.mintUrl, config.unit);
-      hud.status(`imported ${added} ${config.unit}`);
-    } catch (e) {
-      hud.status(`import failed: ${e instanceof Error ? e.message : e}`);
-    }
-    refreshBalance();
+    void doImport(token);
   },
   onSetName(name) {
     net.join(name);
@@ -81,6 +82,15 @@ const net = new Net({
     config = c;
     wallet = c.mode === "live" ? buildPopWallet(c.mintUrl, c.unit) : mockWallet();
     hud.setMode(c.mode);
+    // F6 recovery: a prior session may have produced a token it never got a 200
+    // for (a crash/close mid-present). Re-import any stranded pending tokens into
+    // spendable inventory on startup — they are unspent + fully recoverable.
+    if (c.mode === "live") {
+      const reclaimed = reclaimPendingPresentations();
+      if (reclaimed > 0) {
+        hud.status(`recovered ${reclaimed} ${c.unit} from an interrupted payment`);
+      }
+    }
     void Scene3D.create(canvas, w).then((created) => {
       scene = created;
       scene.setSelf(s);
@@ -169,6 +179,35 @@ function refreshBalance(): void {
   }
   const { balance } = getBalance(config.mintUrl, config.unit);
   hud.setBalance(balance, config.unit);
+}
+
+// F5: another tab mutating the shared inventory must invalidate this tab's HUD
+// balance. Registered once; the listener no-ops where unsupported.
+onInventoryChanged(refreshBalance);
+
+/**
+ * Import a pasted cashuB (F4): dedup against held proofs + NUT-07 state-check
+ * against the mint so a double-paste or an already-spent token is rejected with
+ * a clear message rather than inflating the balance. Network-checked in live
+ * mode; falls back to the offline dedup path if the mint is unreachable.
+ */
+async function doImport(token: string): Promise<void> {
+  if (!config) return;
+  try {
+    const check = buildProofStateChecker(config.mintUrl, config.unit);
+    const { added, rejected, checked } = await importTokenChecked(
+      token,
+      config.mintUrl,
+      config.unit,
+      check,
+    );
+    const note = rejected > 0 ? ` (${rejected} already-spent rejected)` : "";
+    const verified = checked ? "" : " (mint unreachable — not state-checked)";
+    hud.status(`imported ${added} ${config.unit}${note}${verified}`);
+  } catch (e) {
+    hud.status(`import failed: ${e instanceof Error ? e.message : e}`);
+  }
+  refreshBalance();
 }
 
 /* ------------------------------- input ------------------------------------ */
@@ -302,11 +341,28 @@ async function payAndReport(path: string, gate: string): Promise<void> {
       hud.status(`payment failed (${result.reason ?? result.status})`);
     }
   } catch (e) {
-    hud.status(`payment error: ${e instanceof Error ? e.message : e}`);
+    surfacePayError(e);
   } finally {
     paying = false;
     refreshBalance();
   }
+}
+
+/**
+ * Surface a pay-path error. An {@link InventoryWriteError} (F2) is value-at-risk:
+ * the swap succeeded at the mint but the change/token could not be persisted, so
+ * we show a LOUD message and hand the user the recovery token to copy off-device
+ * NOW rather than letting the value silently burn.
+ */
+function surfacePayError(e: unknown): void {
+  if (e instanceof InventoryWriteError) {
+    hud.status(
+      "⚠ STORAGE FULL — your ecash could not be saved. Copy the recovery token now and import it into another wallet.",
+    );
+    if (e.recoveryToken) hud.showPrize(e.recoveryToken);
+    return;
+  }
+  hud.status(`payment error: ${e instanceof Error ? e.message : e}`);
 }
 
 function dist(a: { x: number; z: number }, b: { x: number; z: number }): number {
@@ -358,7 +414,7 @@ async function payAndPlay(path: string, price: number, label: string): Promise<u
     }
     return result.body ?? null;
   } catch (e) {
-    hud.status(`play error: ${e instanceof Error ? e.message : e}`);
+    surfacePayError(e);
     return null;
   } finally {
     paying = false;
