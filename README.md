@@ -32,6 +32,7 @@ Dev query params: `?webgl=1` force WebGL2 (default tries WebGPU, auto-fallback),
 
 - `server/` - Rust crate (`night-bazaar-server` binary + lib + `gen-vectors` helper)
 - `client/` - bun + Three.js; charge-01 payer codec in `client/src/charge01.ts`
+- `fetch-with-pop/` - the client's payment layer: a runtime-agnostic fetch wrapper that auto-pays HTTP 402 cashu challenges (`createCashuPopWallet`), consumed from source by the client
 - `protocol/` - seam: `protocol.ts` (TS source of truth, mirrored by `server/src/protocol.rs`), shared fixtures, golden charge-01 vectors (both test suites consume them)
 - `vault/tokens.json` - prize stock, keyed by chest/booth id (bearer cash, never commit)
 - `vault/revenue.jsonl` - durable revenue sink (a WALLET, never commit): one line per redeemed gate/play, written and fsynced before the grant returns

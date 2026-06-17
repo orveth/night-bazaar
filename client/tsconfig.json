@@ -12,7 +12,11 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@cashu/cashu-ts": ["./node_modules/@cashu/cashu-ts"]
+    }
   },
   "include": ["src", "test", "scripts", "build.ts", "../protocol/protocol.ts"],
   "//exclude": "keeper-debug-pay{,2}.ts are superseded one-off debug probes written against the pre-charge01 codec (they read RequestObject as a creqA); the canonical live harnesses are keeper-paytest.ts + live-money.ts. Excluded so they do not fail the typecheck.",

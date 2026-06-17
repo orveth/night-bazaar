@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@cashu/cashu-ts": "^4.5.1",
-    "@mpp-jams/fetch-with-pop": "file:../../fetch-with-pop",
+    "@mpp-jams/fetch-with-pop": "file:../fetch-with-pop",
     "three": "^0.182.0"
   },
   "devDependencies": {

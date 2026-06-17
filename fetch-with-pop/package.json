@@ -1,0 +1,34 @@
+{
+  "name": "@mpp-jams/fetch-with-pop",
+  "version": "0.1.0",
+  "description": "Browser-free, runtime-agnostic fetch wrapper that transparently auto-pays HTTP 402 'Payment' (draft-httpauth-payment) challenges with method=\"cashu\" using Cashu PoP credentials.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "files": [
+    "src",
+    "LICENSE",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "@cashu/cashu-ts": "^4.5.1"
+  },
+  "keywords": [
+    "cashu",
+    "402",
+    "payment-required",
+    "http-payment",
+    "pop",
+    "mpp",
+    "fetch"
+  ]
+}
