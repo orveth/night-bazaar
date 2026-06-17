@@ -12,9 +12,8 @@ deploys do not invalidate outstanding payment challenges. The mint is
 
 ## 0. One-time: build the image artifacts (local)
 
-The image is THIN: it copies a prebuilt binary, never builds inside Docker
-(the pops dep is a private git repo; no SSH key is baked). Build the
-binary + client + staged runtime tree first, from the repo root:
+The image is THIN: it copies a prebuilt binary, never builds inside Docker.
+Build the binary + client + staged runtime tree first, from the repo root:
 
 ```sh
 bash server/build-image.sh      # release build + bun build + patchelf stage

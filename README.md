@@ -1,10 +1,9 @@
 # Night Bazaar
 
 > **Status & build note.** A working demo on the pops/cashu accept-layer stack:
-> pay pops at a gate, win ecash. It is published to read and share; it is not yet
-> a standalone buildable checkout, because the server depends on the **private**
-> `MakePrisms/pops` repo (the `pops-core-verify` middleware + charge-01 codec), so
-> `cargo build` needs access to that repo.
+> pay pops at a gate, win ecash. The server depends on
+> [`MakePrisms/pops`](https://github.com/MakePrisms/pops) (the `pops-core-verify`
+> middleware and charge-01 codec); clone it and point the build at it (see Run).
 
 A pop-gated 3D browser world. Arrive as a ghost, pay a pops token to spawn a body, pay again to enter gated courts, win real ecash at the booths inside.
 
@@ -43,8 +42,9 @@ Dev query params: `?webgl=1` force WebGL2 (default tries WebGPU, auto-fallback),
 **Server** (from `server/`; needs the pops devshell for rustc and the git dep):
 
 ```sh
+git clone https://github.com/MakePrisms/pops   # the pops checkout, for rustc + the git dep
 cd server
-CARGO_NET_GIT_FETCH_WITH_CLI=true nix develop <path-to-pops> -c cargo run --bin night-bazaar-server
+CARGO_NET_GIT_FETCH_WITH_CLI=true nix develop ../pops -c cargo run --bin night-bazaar-server
 # two bins in this package; bare `cargo run` errors
 # prebuilt: ./target/debug/night-bazaar-server
 ```
