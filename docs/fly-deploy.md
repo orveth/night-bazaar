@@ -16,7 +16,8 @@ The image is THIN: it copies a prebuilt binary, never builds inside Docker.
 Build the binary + client + staged runtime tree first, from the repo root:
 
 ```sh
-bash server/build-image.sh      # release build + bun build + patchelf stage
+# POPS = path to your pops checkout (MakePrisms/pops); build-image.sh requires it
+POPS=../pops bash server/build-image.sh   # release build + client build + patchelf stage
 ```
 
 This produces `server/target/docker-stage/` (the patched binary + its bundled
@@ -191,7 +192,7 @@ gives). Until then the `*.fly.dev` URL is the public address.
 
 | Step | Command |
 |------|---------|
-| Build artifacts | `bash server/build-image.sh` |
+| Build artifacts | `POPS=../pops bash server/build-image.sh` |
 | Create app | `fly launch --no-deploy --copy-config --name night-bazaar --region sjc` |
 | Create volume | `fly volumes create bazaar_data --region sjc --size 1` |
 | Set binding key | `fly secrets set BAZAAR_BINDING_KEY=$(head -c32 /dev/urandom \| od -An -tx1 \| tr -d ' \n')` |

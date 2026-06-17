@@ -40,10 +40,13 @@ Dev query params: `?webgl=1` force WebGL2 (default tries WebGPU, auto-fallback),
 
 ## Run
 
-**Server** (from `server/`; needs the pops devshell for rustc and the git dep):
+**Prerequisites:** [`nix`](https://nixos.org) with flakes (the server builds inside the pops devshell), [`bun`](https://bun.sh) (the client), and Docker (only for the deploy image). No system Rust or Node needed: the devshell brings rustc, and the client is self-contained.
+
+**Server** (from `server/`; the pops devshell provides rustc and the git dep):
 
 ```sh
-git clone https://github.com/MakePrisms/pops   # the pops checkout, for rustc + the git dep
+# clone pops into the repo root so `../pops` resolves from server/:
+git clone https://github.com/MakePrisms/pops
 cd server
 CARGO_NET_GIT_FETCH_WITH_CLI=true nix develop ../pops -c cargo run --bin night-bazaar-server
 # two bins in this package; bare `cargo run` errors
@@ -64,28 +67,53 @@ bun test            # codec vs golden vectors, wallet, protocol fixtures
 CARGO_NET_GIT_FETCH_WITH_CLI=true nix develop <path-to-pops> -c cargo test
 ```
 
-## Configuration
+Everything is environment variables read at boot (`server/src/config.rs` is the source of truth). Every knob has a working local-dev default, so `cargo run` needs nothing set. **For a real `live` deploy the four that matter are** `BAZAAR_MODE=live`, `BAZAAR_MINT_URL`, `BAZAAR_MINT_PUBLIC_URLS` (so browsers see the right mint), and a persistent `BAZAAR_BINDING_KEY`. The rest is tuning.
 
-Key env vars (all optional; sensible defaults for local dev):
+**Core**
 
-| Variable | Purpose |
-|---|---|
-| `BAZAAR_BIND` | Listen address (e.g. `0.0.0.0:8410`) |
-| `BAZAAR_MINT_URL` | Cashu mint URL the server uses for probing and redeeming |
-| `BAZAAR_MINT_PUBLIC_URLS` | Comma-separated mint URLs as clients see them (defaults to `BAZAAR_MINT_URL`) |
-| `BAZAAR_MODE` | `live` (default, pops middleware enforced) or `mock` (free gates, dev only) |
-| `BAZAAR_PRICE_SPAWN/_JADE/_CRIMSON` | Gate prices in pops |
-| `BAZAAR_PRICE_GACHA/_BELL` | Per-play prices for the paid booths |
-| `BAZAAR_BINDING_KEY` | Hex server secret; set as a persistent secret in production so deploys keep outstanding challenges valid |
+| Variable | Default | Purpose |
+|---|---|---|
+| `BAZAAR_MODE` | `live` | `live` enforces the pops 402 middleware; `mock` opens all gates (dev only) |
+| `BAZAAR_BIND` | `0.0.0.0:8410` | Listen address (host:port) |
+| `BAZAAR_MINT_URL` | `http://127.0.0.1:28338` | Cashu mint the server probes, redeems against, and proxies |
+| `BAZAAR_MINT_PUBLIC_URLS` | = `BAZAAR_MINT_URL` | Comma-separated mint URLs as clients see them; first entry is the mint browsers build wallets on, the full list is the accepted-mint allowlist. Set it when the public mint URL differs from the server-side one |
+| `BAZAAR_BINDING_KEY` | per-boot random | Hex secret binding payment challenges; unset means a restart invalidates outstanding challenges (clients refetch). Set a persistent value in production |
 
-See `server/src/config.rs` for the full list.
+**Prices** (pops)
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `BAZAAR_PRICE_SPAWN` | `10` | Spawn a body |
+| `BAZAAR_PRICE_JADE` | `50` | Enter the jade court |
+| `BAZAAR_PRICE_CRIMSON` | `200` | Enter the crimson court |
+| `BAZAAR_PRICE_GACHA` | `5` | One gacha pull |
+| `BAZAAR_PRICE_BELL` | `3` | One bell play |
+| `BAZAAR_GACHA_N` | `8` | Gacha pays out every Nth pull (deterministic, no RNG) |
+
+**Paths**
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `BAZAAR_VAULT` | `../vault/tokens.json` | Prize tokens (bearer cashuB, keyed by chest/booth) |
+| `BAZAAR_REVENUE_SINK` | `../vault/revenue.jsonl` | Append-only log of every redeemed proof. This file is a WALLET (bearer value): persist and back it up |
+| `BAZAAR_STATIC` | `../client/dist` | Built client served at `/` |
+
+**Tuning**
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `BAZAAR_SPEED` | `12.0` | Avatar walk speed (world units/sec, server-authoritative) |
+| `BAZAAR_CHALLENGE_TTL_SECS` | `300` | How long a payment challenge stays valid |
+| `BAZAAR_MINT_TIMEOUT_SECS` | `10` | Per-call mint HTTP timeout (503 beyond it) |
+| `BAZAAR_UNIT_REFRESH_SECS` | `300` | How often the server re-probes the mint for new/expired `pop_<ts>` units (rotation pickup, no restart) |
 
 ## Deploy
 
 Build artifacts, then deploy to Fly.io: see [`docs/fly-deploy.md`](docs/fly-deploy.md).
 
 ```sh
-bash server/build-image.sh          # release build + bun build + staged runtime tree
+# POPS = path to your pops checkout; build-image.sh requires it
+POPS=../pops bash server/build-image.sh   # release build + client build + staged runtime tree
 docker build -t night-bazaar:latest .
 fly deploy
 ```
